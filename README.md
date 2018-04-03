@@ -1,3 +1,5 @@
+# DIYClock1M
+Modified first version of clock OldDIYClock by v0tang
 # OldDIYClock
 
 A firmware for STC15W1K24S microcontroller on DIY LED Matrix Clock with DS3231
@@ -7,3 +9,4 @@ A firmware for STC15W1K24S microcontroller on DIY LED Matrix Clock with DS3231
 Released under Public Domain (code provided "as is", without warranty of any kind)
 
 2017 - HOMEZ
+2018 - VIROKOST
