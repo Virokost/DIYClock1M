@@ -34,7 +34,6 @@ void wiNext(void);
 void wiTime(void);
 void wiHoly(void);
 
-
  Widget code widgets[9] = {
 	{60, wiTime}, /* WI_TIME 60 - time in sec after which would be shown YEAR*/
 	{2, wiNext}, /* WI_YEAR */ 
@@ -62,6 +61,7 @@ void displayInit(void)
 	reversed = key_mer;
 	updateFont();
 	pdisp = &render_buffer[0];
+
 	return;
 }
 
@@ -81,29 +81,22 @@ void displayRefresh(void)
 	static uint8_t columnrefwidth = 0;
 	uint8_t k;
 
-	if(columnrefwidth < 5 )
-	{
-		if ( columnrefwidth == displayBright ) displayClear();
-		
+	if(columnrefwidth < 5 ) {
+		if ( columnrefwidth == displayBright )
+			displayClear();
 		columnrefwidth++;
-		
 		return;
 	}
-	else
-	{
+	else {
 		columnrefwidth = 0;
 		displayClear();
-		if(!reversed)
-		{
+		if(!reversed) {
 			k = 21-columnrefnum;
 		}
-		else
-		{
+		else {
 			k = columnrefnum;
 		}
-		
-		switch(k)
-		{
+		switch(k) {
 			case 0:		col1=0;	 break;
 			case 1:		col2=0;	 break;
 			case 2:		col3=0;	 break;	
@@ -129,23 +122,17 @@ void displayRefresh(void)
 			default:break;
 		}
 
-		if(!reversed)
-		{	
+		if(!reversed) {	
 			P3 = disp[21-k];
 		}
-		else
-		{
+		else {
 			P3 = ((disp[k]>>6)&0x01)|((disp[k]>>4)&0x02)|((disp[k]>>2)&0x04)| (disp[k]&0x08)|((disp[k]<<2)&0x10)|((disp[k]<<4)&0x20)|((disp[k]<<6)&0x40);
 		}
-		
 		columnrefnum++;
-		
-		if( columnrefnum > 21 )
-		{
+		if( columnrefnum > 21 ) {
 			columnrefnum = 0;
 			reversed = key_mer;
-			if(refstart==0)
-			{
+			if(refstart==0) {
 				refstart = 1;
 			}
 		}
@@ -170,27 +157,22 @@ void checkAlarm(void)
 	rtcReadTime();
 
 	// Once check if it's a new second
-	if (rtc.sec == 0)
-	{
-		if (firstCheck)
-		{
+	if (rtc.sec == 0) {
+		if (firstCheck) {
 			firstCheck = 0;
 			// Check alarm
-			if (alarm.on && rtc.hour == alarm.hour && rtc.min == alarm.min)
-			{
+			if (alarm.on && rtc.hour == alarm.hour && rtc.min == alarm.min) {
 				if (*((int8_t*)&alarm.mon + rtc.wday - 1))
 					alarmTimer = 60 * (uint16_t)eep.alarmTimeout;
 			}
-			else
-			{
+			else {
 				// Check new hour
 				if (rtc.hour > alarm.hour && rtc.min == 0 && eep.hourSignal)
 					startBeeper(BEEP_LONG);
 			}
 		}
 	}
-	else
-	{
+	else {
 		firstCheck = 1;
 	}
 
@@ -199,8 +181,7 @@ void checkAlarm(void)
 
 void updateFont(void)
 {
-	switch(eep.fontMode)
-	{
+	switch(eep.fontMode) {
 		default:
 		case 0: {fptr = &num_font1[0]; break; }
 		case 1: {fptr = &num_font2[0]; break; }
@@ -216,8 +197,7 @@ void showDS3231(void)
 {
 	uint8_t i, code *sptr = &pic_DS3231[0];
 
-	for(i=0; i<DISPLAYSIZE; i++, sptr++, pdisp++)
-	{
+	for(i=0; i<DISPLAYSIZE; i++, sptr++, pdisp++) {
 		*pdisp = *sptr;
 	}
 
@@ -240,8 +220,7 @@ void showDot(void)
 			break;
 		}
 		default:
-		case 1:
-		{
+		case 1: {
 			if (dotcount < 5) { dot = 0; }
 			else if (dotcount < 13) { dot = 1; }
 			else if (dotcount < 22) { dot = 2; }
@@ -251,8 +230,7 @@ void showDot(void)
 			else { dot = 0; }
 			break;
 		}
-		case 2:
-		{
+		case 2: {
 			if (dotcount < 6) { dot = 0; }
 			else if (dotcount < 18) { dot = 3; }
 			else if (dotcount < 30) { dot = 4; }
@@ -261,8 +239,7 @@ void showDot(void)
 			else { dot = 0; }
 			break;
 		}
-		case 3:
-		{
+		case 3: {
 			if (dotcount < 7) { dot = 0; }
 			else if (dotcount < 22) { dot = 7; }
 			else if (dotcount < 37) { dot = 3; }
@@ -270,8 +247,7 @@ void showDot(void)
 			else { dot = 0; }
 			break;
 		}
-		case 4:
-		{
+		case 4: {
 			if (dotcount < 7) { dot = 0; }
 			else if (dotcount < 22) { dot = 1; }
 			else if (dotcount < 37) { dot = 2; }
@@ -279,10 +255,8 @@ void showDot(void)
 			else { dot = 0; }
 			break;
 		}
-}
-	
-	for(i=0; i<4; i++, pdisp++)
-	{
+	}
+	for(i=0; i<4; i++, pdisp++) {
 		*pdisp = dot_font[4*dot+i];
 	}
 
@@ -293,27 +267,23 @@ void showNumber(uint8_t num, uint8_t clean, uint8_t dig )
 {
 	uint8_t i, code *sptr;
 
-	for(i=0; i<4; i++, pdisp++)
-	{
-			if(!clean&&(!dig ||((num/10) > 0 )))
-			{
-				sptr = fptr + (4*(num/10)+i);
-				*pdisp = *sptr;
-			}
-			else *pdisp = 0x00;
+	for(i=0; i<4; i++, pdisp++) {
+			if(!clean&&(!dig ||((num/10) > 0 ))) {
+			sptr = fptr + (4*(num/10)+i);
+			*pdisp = *sptr;
+		}
+		else
+			*pdisp = 0x00;
 	}
-	
 	*pdisp = 0x00;
 	pdisp++;
-	
-	for(i=0; i<4; i++, pdisp++)
-	{
-		if(!clean)
-		{
+	for(i=0; i<4; i++, pdisp++) {
+		if(!clean) {
 			sptr = fptr + (4*(num%10)+i);
 			*pdisp = *sptr;
 		}
-		else *pdisp = 0x00;
+		else
+			*pdisp = 0x00;
 	}
 
 	return;
@@ -326,7 +296,6 @@ void showTime(void)
 		showDS3231();
 		return;
 	}
-	
 	showNumber(rtc.hour, 0, 0);
 	showDot();
 	showNumber(rtc.min, 0, 0);
@@ -361,14 +330,10 @@ void showDate(void)
 		showDS3231();
 		return;
 	}
-	
 	showNumber(rtc.date, 0, 1);
-	
-	for(i=0; i<4; i++, pdisp++)
-	{
+	for(i=0; i<4; i++, pdisp++) {
 		*pdisp = dot_font[4+i];
 	}
-	
 	showNumber(rtc.month, 0, 0);
 
 	return;
@@ -378,8 +343,7 @@ void showDayWeek(void)
 {
 	uint8_t i, code *sptr;
 
-	switch(rtc.wday)
-	{
+	switch(rtc.wday) {
 		case 1: sptr = &pic_mon[0];break;
 		case 2: sptr = &pic_tue[0];break;
 		case 3: sptr = &pic_wed[0];break;
@@ -389,9 +353,7 @@ void showDayWeek(void)
 		case 7: sptr = &pic_sun[0];break;
 		default: sptr = &pic_DS3231[0];break;
 	}
-	
-	for(i=0; i<DISPLAYSIZE; i++, sptr++, pdisp++)
-	{
+	for(i=0; i<DISPLAYSIZE; i++, sptr++, pdisp++) {
 		*pdisp = *sptr;
 	}
 
@@ -410,25 +372,25 @@ void showMinSec(void)
 void showTemperature(void)
 {
 	uint8_t i;
-	int8_t temp = eep.tempcoef;
-	temp += rtc.temp;
+	int8_t temp = 0;
 
 	if( /*eep.tempsource == TS_SI &&*/ si7021SensorExists() )
 	{
 		temp = (si7021GetTemp() / 5);
-		
 		if(temp & 1 ) temp += 1;
-		
 		temp >>= 1;
 	}
 	else if ( /*eep.tempsource == TS_BMP &&*/ bmxx80HaveSensor() )
 	{
 		temp = (bmxx80GetTemp() / 5 );
-		
 		if(temp & 1 ) temp += 1;
-		
 		temp >>= 1;
 	}
+	else
+	{
+		temp = rtc.temp;
+	}
+	temp += eep.tempcoef;
 
 	if (temp > 99)
 	{
@@ -436,12 +398,10 @@ void showTemperature(void)
 		{
 			*pdisp = 0x00;
 		}
-		
 		for(i=0; i<5; i++, pdisp++)
 		{
 			*pdisp = temperature_font[50+i];
 		}
-		
 		*pdisp = 0x00;
 		pdisp++;
 		*pdisp = 0x00;
@@ -463,7 +423,6 @@ void showTemperature(void)
 				*pdisp = 0x00;
 			}
 		}
-		
 		*pdisp = 0x00;
 		pdisp++;
 
@@ -493,41 +452,33 @@ void showPressure(void)
 	int8_t i;
 	int16_t pres = bmxx80GetPressure();
 
-	for (i = 0; i < 4; i++) buf[i] = 0;
+	for (i = 0; i < 4; i++)
+		buf[i] = 0;
 
 	i=3;
 	
-	while (pres > 0 || i > 0)
-	{
+	while (pres > 0 || i > 0) {
 		buf[i] = pres % 10;
 		i--;
 		pres /= 10;
 	}
 
-	for(i=0; i<4; i++, pdisp++)
-	{
+	for(i=0; i<4; i++, pdisp++) {
 		sptr = fptr + (4*buf[0]+i);
 		*pdisp = *sptr;
 	}
-	
 	*pdisp = 0x00;
 	pdisp++;
-	
-	for(i=0; i<4; i++, pdisp++)
-	{
+	for(i=0; i<4; i++, pdisp++) {
 		sptr = fptr + (4*buf[1]+i);
 		*pdisp = *sptr;
 	}
-	
 	*pdisp = 0x00;
 	pdisp++;
-	
-	for(i=0; i<4; i++, pdisp++)
-	{
+	for(i=0; i<4; i++, pdisp++) {
 		sptr = fptr + (4*buf[2]+i);
 		*pdisp = *sptr;
 	}
-	
 	*pdisp = 0x00;
 	pdisp++;
 	*pdisp = 0x03;
@@ -536,9 +487,7 @@ void showPressure(void)
 	pdisp++;
 	*pdisp = 0x00;
 	pdisp++;
-	
-	for(i=0; i<4; i++, pdisp++)
-	{
+	for(i=0; i<4; i++, pdisp++) {
 		sptr = fptr + (4*buf[3]+i);
 		*pdisp = *sptr;
 	}
@@ -552,90 +501,68 @@ void showHumidity(void)
 	uint8_t code *sptr;
 	int8_t i;
 	uint16_t humi = 0;
-	
-	if(si7021SensorExists())
-	{
+	if(si7021SensorExists()) {
 		humi = si7021GetHumidity();
 	}
-	else if(bmxx80HaveSensor()==BME280_CHIP_ID)
-	{
+	else if(bmxx80HaveSensor()==BME280_CHIP_ID){
 		humi = bme280GetHumidity();
 	}
 
-	for (i = 0; i < 5; i++) buf[i] = 0;
+	for (i = 0; i < 5; i++)
+		buf[i] = 0;
 
 	i=4;
 	
-	while (humi > 0 || i > 0)
-	{
+	while (humi > 0 || i > 0) {
 		buf[i] = humi % 10;
 		i--;
 		humi /= 10;
 	}
 	
-	if( buf[0] == 0 )
-	{
-		for(i=0; i<4; i++, pdisp++)
-		{
+	if( buf[0] == 0 ) {
+		for(i=0; i<4; i++, pdisp++) {
 			sptr = fptr + (4*buf[1]+i);
 			*pdisp = *sptr;
 		}
-		
 		*pdisp = 0x00;
 		pdisp++;
-		
-		for(i=0; i<4; i++, pdisp++)
-		{
+		for(i=0; i<4; i++, pdisp++) {
 			sptr = fptr + (4*buf[2]+i);
 			*pdisp = *sptr;
 		}
-		
 		*pdisp = 0x00;
 		pdisp++;
 		*pdisp = 0x03;
 		pdisp++;
 		*pdisp = 0x00;
 		pdisp++;
-		
-		for(i=0; i<4; i++, pdisp++)
-		{
+		for(i=0; i<4; i++, pdisp++) {
 			sptr = fptr + (4*buf[3]+i);
 			*pdisp = *sptr;
 		}
 	}
-	else
-	{
+	else {
 		*pdisp = 0x00;
 		pdisp++;
-		
-		for(i=0; i<4; i++, pdisp++)
-		{
+		for(i=0; i<4; i++, pdisp++) {
 			sptr = fptr + (4*buf[0]+i);
 			*pdisp = *sptr;
 		}
-		
 		*pdisp = 0x00;
 		pdisp++;
-		
-		for(i=0; i<4; i++, pdisp++)
-		{
+		for(i=0; i<4; i++, pdisp++) {
 			sptr = fptr + (4*buf[1]+i);
 			*pdisp = *sptr;
 		}
-		
 		*pdisp = 0x00;
 		pdisp++;
-		
-		for(i=0; i<4; i++, pdisp++)
-		{
+		for(i=0; i<4; i++, pdisp++) {
 			sptr = fptr + (4*buf[2]+i);
 			*pdisp = *sptr;
 		}
-		
 		*pdisp = 0x00;
 		pdisp++;
 	}
-	
 	*pdisp = 0x00;
 	pdisp++;
 	*pdisp = 0x62;
@@ -654,8 +581,7 @@ void showHumidity(void)
 
 void autoBright(void)
 {
-	if( rtc.hour < 24 && eep.bright == 6 )
-	{
+	if( rtc.hour < 24 && eep.bright == 6 ) {
 		displayBright = (rtc.hour&0x01)?(hourbright[rtc.hour>>1] & 0x0F):((hourbright[rtc.hour>>1]>>4 )& 0x0F);
 	}
 
@@ -689,8 +615,10 @@ void checkParam(int8_t *param, int8_t diff, int8_t paramMin, int8_t paramMax)
 {
 	*param += diff;
 
-	if (*param > paramMax) *param = paramMin;
-	if (*param < paramMin) *param = paramMax;
+	if (*param > paramMax)
+		*param = paramMin;
+	if (*param < paramMin)
+		*param = paramMax;
 
 	return;
 }
@@ -739,33 +667,24 @@ void showTimeEdit(void)
 	pdisp = &disp[0];
 	updateFont();
 
-	if (refcount < 15) flash = 0;
-	else if (refcount < 45) flash = 1;
-	else flash = 0;
+	if (refcount < 15) { flash = 0; }
+	else if (refcount < 45) { flash = 1; }
+	else { flash = 0; }
 
-	if(rtc.etm == RTC_SEC)
-	{
-		for(i=0; i<9; i++, pdisp++)
-		{
+	if(rtc.etm == RTC_SEC) {
+		for(i=0; i<9; i++, pdisp++) {
 			*pdisp = 0x00;
 		}
-		
-		for(i=0; i<4; i++, pdisp++)
-		{
+		for(i=0; i<4; i++, pdisp++) {
 			*pdisp = dot_font[4*3+i];
 		}
-		
 		showNumber(rtc.sec, !((rtc.etm != RTC_SEC)||(flash && (rtc.etm == RTC_SEC))), 0);
 	}
-	else
-	{
+	else {
 		showNumber(rtc.hour, !((rtc.etm != RTC_HOUR)||(flash && (rtc.etm == RTC_HOUR))), 0);
-		
-		for(i=0; i<4; i++, pdisp++)
-		{
+		for(i=0; i<4; i++, pdisp++) {
 			*pdisp = dot_font[4*3+i];
 		}
-		
 		showNumber(rtc.min, !((rtc.etm != RTC_MIN)||(flash && (rtc.etm == RTC_MIN))), 0);
 	}
 
@@ -780,12 +699,11 @@ void showDateEdit(void)
 	pdisp = &disp[0];
 	updateFont();
 
-	if (refcount < 15) flash = 0;
-	else if (refcount < 45) flash = 1;
-	else flash = 0;
+	if (refcount < 15) { flash = 0; }
+	else if (refcount < 45) { flash = 1; }
+	else { flash = 0; }
 
-	if(rtc.etm == RTC_YEAR)
-	{
+	if(rtc.etm == RTC_YEAR) {
 		*pdisp = 0x00;
 		pdisp++;
 		*pdisp = 0x00;
@@ -797,15 +715,11 @@ void showDateEdit(void)
 		*pdisp = 0x00;
 		pdisp++;
 	}
-	else
-	{
+	else {
 		showNumber(rtc.date, !((rtc.etm != RTC_DATE)||(flash && (rtc.etm == RTC_DATE))), 1);
-		
-		for(i=0; i<4; i++, pdisp++)
-		{
+		for(i=0; i<4; i++, pdisp++) {
 			*pdisp = dot_font[4+i];
 		}
-		
 		showNumber(rtc.month, !((rtc.etm != RTC_MONTH)||(flash && (rtc.etm == RTC_MONTH))), 0);
 	}
 
@@ -820,45 +734,34 @@ void showAlarmEdit(void)
 	pdisp = &disp[0];
 	updateFont();
 
-	if( alarm.etm == ALARM_ON)
-	{
-		if(alarm.on)
-		{
+	if( alarm.etm == ALARM_ON) {
+		if(alarm.on) {
 			sptr = &pic_On[0];
 		}
-		else
-		{
+		else {
 			sptr = &pic_Off[0];
 		}
-		
-		for(i=0; i<DISPLAYSIZE; i++, sptr++)
-		{
+		for(i=0; i<DISPLAYSIZE; i++, sptr++) {
 			disp[i] = *sptr;
 		}
 	}
-	else if((alarm.etm == ALARM_HOUR)||(alarm.etm == ALARM_MIN))
-	{
-		if (refcount < 15) flash = 0;
-		else if (refcount < 45) flash = 1;
-		else flash = 0;
+	else if((alarm.etm == ALARM_HOUR)||(alarm.etm == ALARM_MIN)) {
+		if (refcount < 15) { flash = 0; }
+		else if (refcount < 45) { flash = 1; }
+		else { flash = 0; }
 
 		showNumber(alarm.hour, !((alarm.etm != ALARM_HOUR)||(flash && (alarm.etm == ALARM_HOUR))), 0);
-		
-		for(i=0; i<4; i++, pdisp++)
-		{
+		for(i=0; i<4; i++, pdisp++) {
 			*pdisp = dot_font[4*3+i];
 		}
-		
 		showNumber(alarm.min, !((alarm.etm != ALARM_MIN)||(flash && (alarm.etm == ALARM_MIN))), 0);
 	}
-	else 
-	{
-		if (refcount < 27) flash = 0;
-		else if (refcount < 33) flash = 1;
-		else flash = 0;
+	else {
+		if (refcount < 27) { flash = 0; }
+		else if (refcount < 33) { flash = 1; }
+		else { flash = 0; }
 
-		switch(alarm.etm)
-		{
+		switch(alarm.etm) {
 			case ALARM_MON: {sptr = &pic_alarm_mon[0]; break; }
 			case ALARM_TUE: {sptr = &pic_alarm_tue[0]; break; }
 			case ALARM_WED: {sptr = &pic_alarm_wed[0]; break; }
@@ -869,55 +772,45 @@ void showAlarmEdit(void)
 			default: break;
 		}
 
-		for(i=0; i<DISPLAYSIZE; i++, sptr++)
-		{
+		for(i=0; i<DISPLAYSIZE; i++, sptr++) {
 			j = 0;
-			switch(i)
-			{
+			switch(i) {
 				case 1:
-				case 2:
-				{
+				case 2: {
 					if(((alarm.etm != ALARM_MON)&&alarm.mon)||((alarm.etm == ALARM_MON)&&((alarm.mon && !flash)||(!alarm.mon && flash)))) j = 1;
 					break;
 				}
 				case 4:
-				case 5:
-				{
+				case 5: {
 					if(((alarm.etm != ALARM_TUE)&&alarm.tue)||((alarm.etm == ALARM_TUE)&&((alarm.tue && !flash)||(!alarm.tue && flash)))) j = 1;
 					break;
 				}
 				case 7:
-				case 8:
-				{
+				case 8: {
 					if(((alarm.etm != ALARM_WED)&&alarm.wed)||((alarm.etm == ALARM_WED)&&((alarm.wed && !flash)||(!alarm.wed && flash)))) j = 1;
 					break;
 				}
 				case 10:
-				case 11:
-				{
+				case 11: {
 					if(((alarm.etm != ALARM_THU)&&alarm.thu)||((alarm.etm == ALARM_THU)&&((alarm.thu && !flash)||(!alarm.thu && flash)))) j = 1;
 					break;
 				}
 				case 13:
-				case 14:
-				{
+				case 14: {
 					if(((alarm.etm != ALARM_FRI)&&alarm.fri)||((alarm.etm == ALARM_FRI)&&((alarm.fri && !flash)||(!alarm.fri && flash)))) j = 1;
 					break;
 				}
 				case 16:
-				case 17:
-				{
+				case 17: {
 					if(((alarm.etm != ALARM_SAT)&&alarm.sat)||((alarm.etm == ALARM_SAT)&&((alarm.sat && !flash)||(!alarm.sat && flash)))) j = 1;
 					break;
 				}
 				case 19:
-				case 20:
-				{
+				case 20: {
 					if(((alarm.etm != ALARM_SUN)&&alarm.sun)||((alarm.etm == ALARM_SUN)&&((alarm.sun && !flash)||(!alarm.sun && flash)))) j = 1;
 					break;
 				}
 			}
-			
 			disp[i] = *sptr | j;
 		}
 	}
@@ -954,16 +847,13 @@ void showDispEdit(void)
 
 	pdisp = &disp[0];
 
-	for(i=0; i<16; i++, pdisp++)
-	{
+	for(i=0; i<16; i++, pdisp++) {
 		*pdisp = pic_Type[i];
 	}
-	
 	*pdisp = 0x00;
 	pdisp++;
 
-	for(i=0; i<5; i++, pdisp++)
-	{
+	for(i=0; i<5; i++, pdisp++) {
 		*pdisp = temperature_font[5*eep.dispMode+i];
 	}
 
@@ -981,6 +871,7 @@ void showDotEdit(void)
 {
 	pdisp = &disp[0];
 	updateFont();
+
 	showTime();
 
 	return;
@@ -1001,16 +892,13 @@ void showBrightEdit(void)
 
 	pdisp = &disp[0];
 
-	for(i=0; i<16; i++, pdisp++)
-	{
+	for(i=0; i<16; i++, pdisp++) {
 		*pdisp = pic_BrEdit[i];
 	}
-	
 	*pdisp = 0x00;
 	pdisp++;
 
-	for(i=0; i<5; i++, pdisp++)
-	{
+	for(i=0; i<5; i++, pdisp++) {
 		*pdisp = temperature_font[5*eep.bright+i];
 	}
 
@@ -1028,17 +916,13 @@ void showHourSignalEdit(void)
 {
 	uint8_t i, code *sptr;
 
-	if(eep.hourSignal)
-	{
+	if(eep.hourSignal) {
 		sptr = &pic_On[0];
 	}
-	else
-	{
+	else {
 		sptr = &pic_Off[0];
 	}
-	
-	for(i=0; i<DISPLAYSIZE; i++, sptr++)
-	{
+	for(i=0; i<DISPLAYSIZE; i++, sptr++) {
 		disp[i] = *sptr;
 	}
 
@@ -1062,49 +946,40 @@ void showTimeCoefEdit(void)
 
 	pdisp = &disp[0];
 	sign = (eep.timecoef >= 0)? 0: 1;
-	
-	if(sign)
-	{
+	if(sign) {
 		coef = -eep.timecoef;
 	}
-	else
-	{
+	else {
 		coef = eep.timecoef;
 	}
 	
-	for (i = 0; i < 3; i++) buf[i] = 0;
+	for (i = 0; i < 3; i++)
+		buf[i] = 0;
 
 	i=2;
 	
-	while (coef > 0 || i > 0)
-	{
+	while (coef > 0 || i > 0) {
 		buf[i] = coef % 10;
 		i--;
 		coef /= 10;
 	}
 
 	coef = 3;
-	
-	if( !sign ) coef +=5;
-	
-	if( buf[0] == 0 )
-	{
+	if( !sign )
+		coef +=5;
+	if( buf[0] == 0 ) {
 		coef += 5;
-		if( buf[1] == 0 )
-		{
+		if( buf[1] == 0 ) {
 			coef += 5;
 		}
 	}
 
-	for(i=0; i<coef; i++, pdisp++)
-	{
+	for(i=0; i<coef; i++, pdisp++) {
 		*pdisp = 0x00;
 	}
 	
-	if( sign )
-	{
-		for(i=0; i<4; i++, pdisp++)
-		{
+	if( sign ) {
+		for(i=0; i<4; i++, pdisp++) {
 			*pdisp = 0x08;
 		}
 
@@ -1112,10 +987,8 @@ void showTimeCoefEdit(void)
 		pdisp++;
 	}
 
-	if(buf[0] > 0 )
-	{
-		for(i=0; i<4; i++, pdisp++)
-		{
+	if(buf[0] > 0 ) {
+		for(i=0; i<4; i++, pdisp++) {
 			sptr = fptr + (4*buf[0]+i);
 			*pdisp = *sptr;
 		}
@@ -1124,10 +997,8 @@ void showTimeCoefEdit(void)
 		pdisp++;
 	}
 
-	if((buf[0] > 0 )||(buf[1] > 0 ))
-	{
-		for(i=0; i<4; i++, pdisp++)
-		{
+	if((buf[0] > 0 )||(buf[1] > 0 )) {
+		for(i=0; i<4; i++, pdisp++) {
 			sptr = fptr + (4*buf[1]+i);
 			*pdisp = *sptr;
 		}
@@ -1136,8 +1007,7 @@ void showTimeCoefEdit(void)
 		pdisp++;
 	}
 
-	for(i=0; i<4; i++, pdisp++)
-	{
+	for(i=0; i<4; i++, pdisp++) {
 		sptr = fptr + (4*buf[2]+i);
 		*pdisp = *sptr;
 	}
@@ -1163,34 +1033,23 @@ void showTempCoefEdit(void)
 
 void wiNext(void)
 {
-	if( screenTime > widgets[widgetNumber].sec )
-	{
+	if( screenTime > widgets[widgetNumber].sec ) {
 		widgetNumber++;
 		screenTime = 0;
-		
-		if( widgetNumber > ELEMENTS(widgets) )
-		{
+		if( widgetNumber > ELEMENTS(widgets) ) {
 			widgetNumber = WI_TIME;
 		}
-		
-		if(widgetNumber == WI_PRES && !bmxx80HaveSensor())
-		{
+		if(widgetNumber == WI_PRES && !bmxx80HaveSensor()) {
 			widgetNumber = WI_HUMI;
 		}
-		
-		if(widgetNumber == WI_HUMI && ( !(bmxx80HaveSensor()==BME280_CHIP_ID||si7021SensorExists()) ))
-		{
+		if(widgetNumber == WI_HUMI && ( !(bmxx80HaveSensor()==BME280_CHIP_ID||si7021SensorExists()) )) {
 			widgetNumber = WI_HOLY;
 		}
-		
-		if(widgetNumber == WI_HOLY)
-		{
-			if(holiday)
-			{
+		if(widgetNumber == WI_HOLY) {
+			if(holiday) {
 				scroll_index = 0;
 			}
-			else
-			{
+			else {
 				widgetNumber = WI_TIME;
 				scroll_index = -1;
 			}
@@ -1214,8 +1073,7 @@ void wiTime(void)
 
 void wiHoly(void)
 {
-	if(scroll_index < 0)
-	{
+	if(scroll_index < 0){
 		wiNext();
 	}
 
@@ -1227,21 +1085,16 @@ void showRenderBuffer(void)
 	uint8_t i;
 
 	int16_t ind = scroll_index - DISPLAYSIZE;
-	
-	if( scroll_index > (render_buffer_size + DISPLAYSIZE ))
-	{
+	if( scroll_index > (render_buffer_size + DISPLAYSIZE )) {
 		scroll_index = -1;
 		widgetNumber = 0; screenTime = 0;
 	}
 
-	for(i=0; i<DISPLAYSIZE; i++)
-	{
-		if(( ind + i >= 0 )&&(ind + i < render_buffer_size ))
-		{
+	for(i=0; i<DISPLAYSIZE; i++) {
+		if(( ind + i >= 0 )&&(ind + i < render_buffer_size )) {
 			disp[i] = render_buffer[(uint8_t)(ind + i)];
 		}
-		else
-		{
+		else {
 			disp[i] = 0x00;
 		}
 	}
@@ -1251,8 +1104,7 @@ void showRenderBuffer(void)
 
 void writeRenderBuffer(uint8_t value)
 {
-	if ( render_buffer_size < RENDSERBUFFERSIZE)
-	{
+	if ( render_buffer_size < RENDSERBUFFERSIZE) {
 		render_buffer[render_buffer_size++] = value;
 	}
 
@@ -1265,31 +1117,23 @@ void renderHoliday(uint8_t length, char *str)
 
 	render_buffer_size = 0;
 
-	for(i=0; i < (length - 1); i++, str++)
-	{
+	for(i=0; i < (length - 1); i++, str++) {
 		c = *str;
-		if( c >= 0xA0 )
-		{
+		if( c >= 0xA0 ) {
 			c -= 0x40;
 		}
-		else if( c >= 0x20 )
-		{
+		else if( c >= 0x20 ) {
 			c -= 0x20;
 		}
-		else
-		{
+		else {
 			c = 0x1F;
 		}
-		
-		for(j=0; j<5; j++)
-		{
+		for(j=0; j<5; j++) {
 			t = font_cp1251_07[5*c+j];
-			if( t != VOID )
-			{
+			if( t != VOID ) {
 				writeRenderBuffer(t);
 			}
 		}
-		
 		writeRenderBuffer(0x00);
 	}
 
@@ -1303,25 +1147,25 @@ static char *mkNumberString(int16_t value, uint8_t width, uint8_t lead)
 	uint8_t sign = lead;
 	int8_t pos;
 
-	if (value < 0)
-	{
+	if (value < 0) {
 		sign = '-';
 		value = -value;
 	}
 
 	// Clear buffer and go to it's tail
-	for (pos = 0; pos < width; pos++) strbuf[pos] = lead;
-
+	for (pos = 0; pos < width; pos++)
+		strbuf[pos] = lead;
 	strbuf[pos--] = '\0';
+
 	// Fill buffer from right to left
-	while (value > 0 || pos > width - 2)
-	{
+	while (value > 0 || pos > width - 2) {
 		strbuf[pos] = value % 10 + 0x30;
 		pos--;
 		value /= 10;
 	}
 
-	if (pos >= 0) strbuf[pos] = sign;
+	if (pos >= 0)
+		strbuf[pos] = sign;
 
 	return strbuf;
 }
@@ -1332,42 +1176,33 @@ static char *mkNumberString(int16_t value, uint8_t width, uint8_t lead)
 void showTestRender(void)
 {
 	/*
-	 э = \xFD
+	 ? = \xFD
 	*/
 	//char test[] = "TEST RENDER!!! Proverka???\x63";
-	//char test[] = "С Новым Годом!!!";
-	//char test[] = "ШЩЪЫЬЭЮЯшщъыь\xFDюя";
-	char code test[] = "Проверка рендеринга, на длину строки.";
+	//char test[] = "? ????? ?????!!!";
+	//char test[] = "?????????????\xFD??";
+	char code test[] = "???????? ??????????, ?? ????? ??????.";
 	uint8_t i,j,t;
 	uint8_t c;
 
 	scroll_index = 0;
-	
-	for(i=0; i < strlen(test); i++)
-	{
+	for(i=0; i < strlen(test); i++) {
 		c = test[i];
-		if( c >= 0xA0 )
-		{
+		if( c >= 0xA0 ) {
 			c -= 0x40;
 		}
-		else if( c >= 0x20 )
-		{
+		else if( c >= 0x20 ) {
 			c -= 0x20;
 		}
-		else
-		{
+		else {
 			c = 0x1F;
 		}
-		
-		for(j=0; j<5; j++)
-		{
+		for(j=0; j<5; j++) {
 			t = font_cp1251_07[5*c+j];
-			if( t != VOID )
-			{
+			if( t != VOID ) {
 				writeRenderBuffer(t);
 			}
 		}
-		
 		writeRenderBuffer(0x00);
 	}
 
