@@ -4,7 +4,8 @@
 #include "sys.h"
 #include "alarm.h"
 
-enum {
+/*
+// enum {
 	EEP_PAGEBLOCK = 0,
 	EEP_HOURSIGNAL,
 	EEP_DISPMODE,
@@ -26,6 +27,7 @@ enum {
 	EEP_TIME_COEF,
 	EEP_TEMP_SOURCE
 };
+*/
 
 typedef struct {
 	uint8_t pageBlock;

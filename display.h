@@ -15,14 +15,17 @@ enum
 	MODE_EDIT_DATE,
 	MODE_EDIT_ALARM,
 	MODE_EDIT_HOURSIGNAL,
-	MODE_EDIT_FONT,
 	MODE_EDIT_DISP,
-	MODE_EDIT_DOT,
 	MODE_EDIT_BRIGHT,
 	MODE_EDIT_TIME_COEF,
 	MODE_EDIT_TEMP_COEF,
+	MODE_TIMER_SET,
+	MODE_EDIT_FONT,
+	MODE_EDIT_DOT,
 	MODE_EXIT,
 	MODE_WIDGET,
+	MODE_TIMER_START,
+	MODE_TIMER_END,
 	MODE_TEST,
 
 	MODE_END
@@ -73,6 +76,10 @@ extern uint8_t widgetNumber;
 extern bit refstart;
 extern uint8_t refcount;
 extern uint8_t dotcount;
+extern uint8_t timerSet;
+extern uint8_t timerSecStart;
+extern uint8_t secSum;
+extern uint8_t secMin;
 extern bit reversed;
 extern Widget code widgets[9];
 
@@ -103,6 +110,9 @@ void changeTimeCoef(int8_t diff);
 void showTimeCoefEdit(void);
 void changeTempCoef(int8_t diff);
 void showTempCoefEdit(void);
+void changeTimerSet(int8_t diff);
+void showTimerStart();
+void showTimer(uint8_t min, uint8_t sec);
 void showRenderBuffer(void);
 void renderHoliday(uint8_t length, char *str);
 

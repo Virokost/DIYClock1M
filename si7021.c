@@ -46,21 +46,37 @@ void _command(uint8_t _cmd, uint8_t * buf)
 
 int16_t _getCelsiusPostHumidity()
 {
-	int32_t tempraw;
+//	int32_t tempraw;
+	int16_t tempraw;
+	float tempfloat;
 	uint8_t tempbytes[2];
+
 	_command(SI7021_MEASURE_TEMP_NOHOLD_CMD, tempbytes);
-	tempraw = (int32_t)tempbytes[0] << 8 | tempbytes[1];
-	tempraw &= 0xFFFC;
-	return ((17572 * tempraw) >> 16) - 4685;
+//	tempraw = (int32_t)tempbytes[0] << 8 | tempbytes[1];
+//	tempraw &= 0xFFFC;
+//	return ((17572 * tempraw) >> 16) - 4685;
+	tempraw = (int16_t)tempbytes[0] << 8 | tempbytes[1];
+	tempfloat = (175.72*tempraw/65536.0 - 46.85)*100.0;
+	tempraw = tempfloat;
+	
+	return tempraw;
 }
 
 uint16_t getHumidityBasisPoints() {
-	int32_t humraw;
+//	uint32_t humraw;
+	uint16_t humraw;
+	float humfloat;
 	uint8_t humbytes[2];
+	
 	_command(SI7021_MEASURE_HUM_NOHOLD_CMD, humbytes);
-	humraw = (int32_t)humbytes[0] << 8 | humbytes[1];
-	humraw &= 0xFFFC;
-	return ((12500 * humraw) >> 16) - 600;
+//	humraw = (uint32_t)humbytes[0] << 8 | humbytes[1];
+//	humraw &= 0xFFFC;
+//	return ((12500 * humraw) >> 16) - 600;
+	humraw = (uint16_t)humbytes[0] << 8 | humbytes[1];
+	humfloat = (125.0*humraw/65536.0 - 6.0)*100.0;
+	humraw = humfloat;
+	
+	return humraw;
 }
 
 void si7021Init(void)

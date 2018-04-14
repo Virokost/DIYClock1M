@@ -23,7 +23,7 @@ void hwInit(void)
 	bmxx80Init();
 	si7021Init();
 	rtc.etm = RTC_NOEDIT;
-
+	
 	return;
 }
 
@@ -62,9 +62,9 @@ void main(void)
 	hwInit();
 	startBeeper(BEEP_SHORT);
 	sensTimer = TEMP_MEASURE_TIME;
-
+	
 	while(1)
-	{
+	{ // begin main while loop
 		while(refstart == 0) {}
 			
 		refstart = 0;
@@ -105,10 +105,11 @@ void main(void)
 		BTN_1 -  '+'
 		BTN_2 -  '-'
 		*/
+
 		switch (cmd)
-		{
+		{ // begin switch cmd
 			case BTN_0:
-			{
+			{ // begin BTN_0 case
 				if ( eep.dispMode == 5 && dispMode == MODE_MAIN )
 				{
 					dispMode = MODE_WIDGET;
@@ -118,12 +119,12 @@ void main(void)
 				}
 				
 				switch (dispMode)
-				{
+				{ // begin switch1 dispMode
 					case MODE_MAIN: { break; }
 					case MODE_MENU:
 					{
 						switch(menuNumber)
-						{
+						{ // begin switch menuNumber
 							case MODE_EDIT_TIME: {rtc.etm = RTC_HOUR; dispMode = menuNumber; break;}
 							case MODE_EDIT_DATE: {rtc.etm = RTC_YEAR; dispMode = menuNumber; break;}
 							case MODE_EDIT_ALARM: {alarm.etm = ALARM_ON; dispMode = menuNumber; break;}
@@ -140,13 +141,15 @@ void main(void)
 							case MODE_EDIT_BRIGHT:
 							case MODE_EDIT_TEMP_COEF:
 							case MODE_EDIT_TIME_COEF:
+							case MODE_TIMER_SET:
 							{
 								dispMode = menuNumber;
 								break;
 							}
+							case MODE_TIMER_START: { showTimerStart(); break; }
 							default:
 								break;
-						}
+						}  // end switch menuNumber
 						break;
 					}
 					case MODE_EDIT_TIME:
@@ -193,31 +196,40 @@ void main(void)
 					{
 						rtcSavePPM();
 					}
+					case MODE_TIMER_SET:
+					{
+						dispMode = MODE_TIMER_START;
+						timerSecStart = rtc.sec;
+						secSum = 0;
+						secMin = 59;
+						break;
+					}
 					case MODE_EDIT_HOURSIGNAL:
 					case MODE_EDIT_FONT:
 					case MODE_EDIT_DISP:
 					case MODE_EDIT_DOT:
 					case MODE_EDIT_BRIGHT:
 					case MODE_EDIT_TEMP_COEF:
+					case MODE_TIMER_END:
 					case MODE_EXIT:
 					{
 						saveEdit();
 						resetDispLoop();
 						break;
 					}
-				}
+				}  // end switch1 dispMode
 				break;
-			}
+			}  // end BTN_0 case
 			case BTN_1:
-			{
+			{ // begin BTN_1 case
 				direction = PARAM_UP;
-			}
+			} // end BTN_1 case
 			case BTN_2:
-			{
+			{ // begin BTN_2 case
 				if (cmd == BTN_2)
 					direction = PARAM_DOWN;
 				switch (dispMode)
-				{
+				{ // begin switch2 dispMode
 					case MODE_MAIN: { changeBright(direction); break; }
 					case MODE_MENU: { changeMenu(direction); break; }
 					case MODE_EDIT_TIME:
@@ -230,14 +242,15 @@ void main(void)
 					case MODE_EDIT_BRIGHT: { changeBright(direction); break; }
 					case MODE_EDIT_TIME_COEF: { changeTimeCoef(direction); break; }
 					case MODE_EDIT_TEMP_COEF: { changeTempCoef(direction); break; }
+					case MODE_TIMER_SET: { changeTimerSet(direction); break; }
 					case MODE_EXIT: {break;}
-				}
+				}   // end switch2 dispMode
 				break;
-			}
+			} // end BTN_2 case
 			case BTN_0_LONG:
-			{
+			{ // begin BTN_0_LONG case
 				switch (dispMode)
-				{
+				{ // begin switch3 dispMode
 					case MODE_MAIN: { dispMode = MODE_MENU; /*menuNumber = MODE_EDIT_TIME;*/ break; }
 					case MODE_MENU: { dispMode = MODE_MAIN; break; }
 					case MODE_EDIT_ALARM:
@@ -255,15 +268,20 @@ void main(void)
 					{
 						cancelEdit();
 					}
+					case MODE_TIMER_SET:
+					case MODE_TIMER_START:
+					{ 
+						timerSet = 0;
+						cancelEdit();
+					}
 					case MODE_EDIT_TIME:
 					case MODE_EDIT_DATE:
 					{
 						resetDispLoop();
-						break;
 					}
-				}
+				} // end switch3 dispMode
 				break;
-			}
+			} // end BTN_0_LONG case
 			case BTN_1_LONG:
 			{
 				break;
@@ -288,10 +306,10 @@ void main(void)
 			{
 				break;
 			}
-		}
+		} // end switch cmd
 
 		switch(dispMode)
-		{
+		{ // begin switch4 dispMode
 			case MODE_MAIN: { showMainScreen(); break; }
 			case MODE_MENU: { showMenu(); break; }
 			case MODE_EDIT_TIME: { showTimeEdit(); break; } 
@@ -304,9 +322,17 @@ void main(void)
 			case MODE_EDIT_BRIGHT: { showBrightEdit(); break; }
 			case MODE_EDIT_TIME_COEF: { showTimeCoefEdit(); break; }
 			case MODE_EDIT_TEMP_COEF: { showTempCoefEdit(); break; }
+			case MODE_TIMER_SET: { showTimer(timerSet, 0); break; }
+			case MODE_TIMER_START:
+			{
+				if ( timerSet > 0 ) showTimerStart();
+				else dispMode = MODE_MENU;
+				break;
+			}
+			case MODE_TIMER_END: { showTimer(0, 0); break;}
 			case MODE_EXIT:
 			case MODE_WIDGET: { dispMode = MODE_MAIN; break; }
-		}
+		} // end switch4 dispMode
 
 		dotcount++;
 		refcount++;
@@ -317,14 +343,14 @@ void main(void)
 		}
 		
 		if( dotcount > 119 ) dotcount = 0;
-
+			
 		if( refcount > 59 )
 		{
 			refcount = 0;
 			screenTime++;
 			((__ptr_wi_func)widgets[widgetNumber].func)();
 		}
-	}
+	} // end main while loop
 	
 	return;
 }

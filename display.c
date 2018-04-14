@@ -29,6 +29,10 @@ bit reversed;
 bit refstart;
 uint8_t refcount;
 uint8_t dotcount;
+uint8_t timerSet = 0;
+uint8_t timerSecStart;
+uint8_t secSum;
+uint8_t secMin;
 
 void wiNext(void);
 void wiTime(void);
@@ -42,7 +46,7 @@ void wiHoly(void);
 	{5, wiNext}, /* WI_MINSEC */ 
 	{2, wiNext}, /* WI_TEMP */ 
 	{2, wiNext}, /* WI_PRES */ 
-	{2, wiNext}, /* WI_HUMI */ 
+	{5, wiNext}, /* WI_HUMI */ 
 	{0, wiHoly} /* WI_HOLY */ 
  };
 
@@ -204,89 +208,54 @@ void showDS3231(void)
 	return;
 }
 
-void showDot(void)
+void showDot()
 {
 	uint8_t i, dot;
 
-	switch(eep.dotMode)
-	{
-		case 0:
-		{
-//			if (dotcount < 15) { dot = 0; }
-//			else if (dotcount < 45) { dot = 3; }
-			if (dotcount < 30) { dot = 0; }
-			else if (dotcount < 90) { dot = 3; }
-			else { dot = 0; }
-			break;
-		}
-		default:
-		case 1: {
-			if (dotcount < 5) { dot = 0; }
-			else if (dotcount < 13) { dot = 1; }
-			else if (dotcount < 22) { dot = 2; }
-			else if (dotcount < 39) { dot = 3; }
-			else if (dotcount < 48) { dot = 2; }
-			else if (dotcount < 56) { dot = 1; }
-			else { dot = 0; }
-			break;
-		}
-		case 2: {
-			if (dotcount < 6) { dot = 0; }
-			else if (dotcount < 18) { dot = 3; }
-			else if (dotcount < 30) { dot = 4; }
-			else if (dotcount < 42) { dot = 5; }
-			else if (dotcount < 54) { dot = 6; }
-			else { dot = 0; }
-			break;
-		}
-		case 3: {
-			if (dotcount < 7) { dot = 0; }
-			else if (dotcount < 22) { dot = 7; }
-			else if (dotcount < 37) { dot = 3; }
-			else if (dotcount < 52) { dot = 8; }
-			else { dot = 0; }
-			break;
-		}
-		case 4: {
-			if (dotcount < 7) { dot = 0; }
-			else if (dotcount < 22) { dot = 1; }
-			else if (dotcount < 37) { dot = 2; }
-			else if (dotcount < 52) { dot = 1; }
-			else { dot = 0; }
-			break;
-		}
-	}
-	for(i=0; i<4; i++, pdisp++) {
-		*pdisp = dot_font[4*dot+i];
-	}
+	if (dotcount < 30) dot = 2; // show two points together
+	else if (dotcount < 90) dot = 3; // show semicolon
+	else dot = 2; // show two points together
 
-	return;
+	for( i=0; i<4; i++, pdisp++ ) *pdisp = dot_font[4*dot+i];
+}
+
+void showDotMinSec()
+{
+	uint8_t i, dot;
+
+	if (dotcount < 30) dot = 0; // dont show semicolon
+	else if (dotcount < 90) dot = 3; // show semicolon
+	else dot = 0; // dont show semicolon
+
+	for( i=0; i<4; i++, pdisp++ ) *pdisp = dot_font[4*dot+i];
 }
 
 void showNumber(uint8_t num, uint8_t clean, uint8_t dig )
 {
 	uint8_t i, code *sptr;
 
-	for(i=0; i<4; i++, pdisp++) {
-			if(!clean&&(!dig ||((num/10) > 0 ))) {
+	for(i=0; i<4; i++, pdisp++)
+	{
+		if( !clean && ( !dig ||((num/10) > 0 ) ) )
+		{
 			sptr = fptr + (4*(num/10)+i);
 			*pdisp = *sptr;
 		}
-		else
-			*pdisp = 0x00;
+		else *pdisp = 0x00;
 	}
+	
 	*pdisp = 0x00;
 	pdisp++;
-	for(i=0; i<4; i++, pdisp++) {
-		if(!clean) {
+	
+	for(i=0; i<4; i++, pdisp++)
+	{
+		if( !clean )
+		{
 			sptr = fptr + (4*(num%10)+i);
 			*pdisp = *sptr;
 		}
-		else
-			*pdisp = 0x00;
+		else *pdisp = 0x00;
 	}
-
-	return;
 }
 
 void showTime(void)
@@ -299,26 +268,21 @@ void showTime(void)
 	showNumber(rtc.hour, 0, 0);
 	showDot();
 	showNumber(rtc.min, 0, 0);
-
-	return;
 }
 
-void showYear(void)
+void showYear()
 {
 	pdisp = &disp[0];
 	
-	*pdisp = 0x00;
+	*pdisp = 0x00; // 1 space
 	pdisp++;
-	*pdisp = 0x00;
+	*pdisp = 0x00; // 1 space
 	pdisp++;
 	showNumber(20, 0, 0); // First two numbers of year (20..)
-	*pdisp = 0x00;
+	*pdisp = 0x00; // 1 space
 	pdisp++;
 	showNumber(rtc.year, 0, 0); // Last two numbers of year (..18)
-	*pdisp = 0x00;
-	pdisp++;
-
-	return;
+	*pdisp = 0x00; // 1 space
 }
 
 void showDate(void)
@@ -330,20 +294,20 @@ void showDate(void)
 		showDS3231();
 		return;
 	}
-	showNumber(rtc.date, 0, 1);
-	for(i=0; i<4; i++, pdisp++) {
-		*pdisp = dot_font[4+i];
-	}
+	
+	showNumber(rtc.date, 0, 0);
+	
+	for(i=0; i<4; i++, pdisp++) *pdisp = dot_font[4+i];
+	
 	showNumber(rtc.month, 0, 0);
-
-	return;
 }
 
 void showDayWeek(void)
 {
 	uint8_t i, code *sptr;
 
-	switch(rtc.wday) {
+	switch(rtc.wday)
+	{
 		case 1: sptr = &pic_mon[0];break;
 		case 2: sptr = &pic_tue[0];break;
 		case 3: sptr = &pic_wed[0];break;
@@ -353,216 +317,207 @@ void showDayWeek(void)
 		case 7: sptr = &pic_sun[0];break;
 		default: sptr = &pic_DS3231[0];break;
 	}
-	for(i=0; i<DISPLAYSIZE; i++, sptr++, pdisp++) {
-		*pdisp = *sptr;
-	}
+	
+	for(i=0; i<DISPLAYSIZE; i++, sptr++, pdisp++) *pdisp = *sptr;
 
 	return;
 }
 
-void showMinSec(void)
+void showMinSec()
 {
 	showNumber(rtc.min, 0, 0);
-	showDot();
+	showDotMinSec();
 	showNumber(rtc.sec, 0, 0);
-
-	return;
 }
 
 void showTemperature(void)
 {
+	static uint8_t buf[5];
+	uint8_t code *sptr;
 	uint8_t i;
-	int8_t temp = 0;
+	int16_t temp = 0;
 
 	if( /*eep.tempsource == TS_SI &&*/ si7021SensorExists() )
 	{
-		temp = (si7021GetTemp() / 5);
-		if(temp & 1 ) temp += 1;
-		temp >>= 1;
+		temp = si7021GetTemp()*10;
 	}
 	else if ( /*eep.tempsource == TS_BMP &&*/ bmxx80HaveSensor() )
 	{
-		temp = (bmxx80GetTemp() / 5 );
-		if(temp & 1 ) temp += 1;
-		temp >>= 1;
+		temp = bmxx80GetTemp()*10;
 	}
 	else
 	{
-		temp = rtc.temp;
+		temp = rtc.temp*100;
 	}
-	temp += eep.tempcoef;
 
-	if (temp > 99)
+	temp += eep.tempcoef;
+	
+	for (i = 0; i < 5; i++) buf[i] = 0;
+
+	i=4;
+	
+	while (temp > 0 || i > 0)
+	{
+		buf[i] = temp % 10;
+		i--;
+		temp /= 10;
+	}
+	
+	if( buf[0] == 0 )
 	{
 		for(i=0; i<4; i++, pdisp++)
 		{
-			*pdisp = 0x00;
+			sptr = fptr + (4*buf[1]+i);
+			*pdisp = *sptr;
 		}
-		for(i=0; i<5; i++, pdisp++)
+		
+		*pdisp = 0x00;
+		pdisp++;
+		
+		for(i=0; i<4; i++, pdisp++)
 		{
-			*pdisp = temperature_font[50+i];
+			sptr = fptr + (4*buf[2]+i);
+			*pdisp = *sptr;
 		}
+		
 		*pdisp = 0x00;
 		pdisp++;
+		*pdisp = 0x03;
+		pdisp++;
+		*pdisp = 0x03;
+		pdisp++;
+
 		*pdisp = 0x00;
 		pdisp++;
+		
+		for(i=0; i<4; i++, pdisp++)
+		{
+			sptr = fptr + (4*buf[3]+i);
+			*pdisp = *sptr;
+		}
 	}
 	else
 	{
-		if (temp > 9)
-		{
-			for(i=0; i<5; i++, pdisp++)
-			{
-				*pdisp = temperature_font[5*(temp/10)+i];
-			}
-		}
-		else
-		{
-			for(i=0; i<5; i++, pdisp++)
-			{
-				*pdisp = 0x00;
-			}
-		}
 		*pdisp = 0x00;
 		pdisp++;
-
-		for(i=0; i<5; i++, pdisp++)
+		
+		for(i=0; i<4; i++, pdisp++)
 		{
-			*pdisp = temperature_font[5*(temp%10)+i];
+			sptr = fptr + (4*buf[0]+i);
+			*pdisp = *sptr;
 		}
-	}
-	
-	*pdisp = 0x00;
-	pdisp++;
-	*pdisp = 0x00;
-	pdisp++;
-	
-	for(i=0; i<9; i++, pdisp++)
-	{
-		*pdisp = temperature_font[55+i];
+		
+		*pdisp = 0x00;
+		pdisp++;
+		
+		for(i=0; i<4; i++, pdisp++)
+		{
+			sptr = fptr + (4*buf[1]+i);
+			*pdisp = *sptr;
+		}
+		
+		*pdisp = 0x00;
+		pdisp++;
+		
+		for(i=0; i<4; i++, pdisp++)
+		{
+			sptr = fptr + (4*buf[2]+i);
+			*pdisp = *sptr;
+		}
+		
+		*pdisp = 0x00;
+		pdisp++;
 	}
 
+// C	for grad C
+	*pdisp = 0x00;
+	pdisp++;
+	*pdisp = 0x3E;
+	pdisp++;
+	*pdisp = 0x41;
+	pdisp++;
+	*pdisp = 0x41;
+	pdisp++;
+	*pdisp = 0x41;
+	pdisp++;
+	*pdisp = 0x22;
+	pdisp++;
+	
 	return;
 }
 
 void showPressure(void)
 {
-	static uint8_t buf[4];
-	uint8_t code *sptr;
 	int8_t i;
-	int16_t pres = bmxx80GetPressure();
-
-	for (i = 0; i < 4; i++)
-		buf[i] = 0;
-
-	i=3;
+	int16_t pres = 0;
+	float floatpres = 0.0;
 	
-	while (pres > 0 || i > 0) {
-		buf[i] = pres % 10;
-		i--;
-		pres /= 10;
-	}
+	floatpres = (float)bmxx80GetPressure();
+	floatpres = floatpres/10.0 + 0.51;
+	pres = floatpres;
+	
+	*pdisp = 0x00;
+	pdisp++;
+	*pdisp = 0x00;
+	pdisp++;
 
-	for(i=0; i<4; i++, pdisp++) {
-		sptr = fptr + (4*buf[0]+i);
-		*pdisp = *sptr;
-	}
-	*pdisp = 0x00;
-	pdisp++;
-	for(i=0; i<4; i++, pdisp++) {
-		sptr = fptr + (4*buf[1]+i);
-		*pdisp = *sptr;
-	}
-	*pdisp = 0x00;
-	pdisp++;
-	for(i=0; i<4; i++, pdisp++) {
-		sptr = fptr + (4*buf[2]+i);
-		*pdisp = *sptr;
-	}
-	*pdisp = 0x00;
-	pdisp++;
-	*pdisp = 0x03;
-	pdisp++;
-	*pdisp = 0x03;
-	pdisp++;
-	*pdisp = 0x00;
-	pdisp++;
-	for(i=0; i<4; i++, pdisp++) {
-		sptr = fptr + (4*buf[3]+i);
-		*pdisp = *sptr;
-	}
+	for(i=0; i<5; i++, pdisp++) *pdisp = temperature_font[5*(pres/100)+i];
 
+	*pdisp = 0x00;
+	pdisp++;
+	
+	for(i=0; i<5; i++, pdisp++) *pdisp = temperature_font[5*((pres/10)%10)+i];
+	
+	*pdisp = 0x00;
+	pdisp++;
+	
+	for(i=0; i<5; i++, pdisp++) *pdisp = temperature_font[5*(pres%10)+i];
+
+	*pdisp = 0x00;
+	pdisp++;
+	*pdisp = 0x00;
+	pdisp++;
+	*pdisp = 0x00;
+	pdisp++;
+	
 	return;
 }
 
 void showHumidity(void)
 {
-	static uint8_t buf[5];
-	uint8_t code *sptr;
 	int8_t i;
 	uint16_t humi = 0;
-	if(si7021SensorExists()) {
-		humi = si7021GetHumidity();
-	}
-	else if(bmxx80HaveSensor()==BME280_CHIP_ID){
-		humi = bme280GetHumidity();
-	}
-
-	for (i = 0; i < 5; i++)
-		buf[i] = 0;
-
-	i=4;
+	float floathumi = 0.0;
 	
-	while (humi > 0 || i > 0) {
-		buf[i] = humi % 10;
-		i--;
-		humi /= 10;
+	if(si7021SensorExists()) humi = si7021GetHumidity();
+	else if(bmxx80HaveSensor()==BME280_CHIP_ID) humi = bme280GetHumidity();
+	
+	floathumi = (float)humi;
+	floathumi = floathumi/100.0 +0.51;
+	humi = floathumi;
+
+	*pdisp = 0x00;
+	pdisp++;
+	*pdisp = 0x00;
+	pdisp++;
+	
+	if (humi > 9)
+	{
+		for(i=0; i<5; i++, pdisp++) { *pdisp = temperature_font[5*(humi/10)+i]; }
+	}
+	else
+	{
+		for(i=0; i<5; i++, pdisp++) { *pdisp = 0x00; }
 	}
 	
-	if( buf[0] == 0 ) {
-		for(i=0; i<4; i++, pdisp++) {
-			sptr = fptr + (4*buf[1]+i);
-			*pdisp = *sptr;
-		}
-		*pdisp = 0x00;
-		pdisp++;
-		for(i=0; i<4; i++, pdisp++) {
-			sptr = fptr + (4*buf[2]+i);
-			*pdisp = *sptr;
-		}
-		*pdisp = 0x00;
-		pdisp++;
-		*pdisp = 0x03;
-		pdisp++;
-		*pdisp = 0x00;
-		pdisp++;
-		for(i=0; i<4; i++, pdisp++) {
-			sptr = fptr + (4*buf[3]+i);
-			*pdisp = *sptr;
-		}
-	}
-	else {
-		*pdisp = 0x00;
-		pdisp++;
-		for(i=0; i<4; i++, pdisp++) {
-			sptr = fptr + (4*buf[0]+i);
-			*pdisp = *sptr;
-		}
-		*pdisp = 0x00;
-		pdisp++;
-		for(i=0; i<4; i++, pdisp++) {
-			sptr = fptr + (4*buf[1]+i);
-			*pdisp = *sptr;
-		}
-		*pdisp = 0x00;
-		pdisp++;
-		for(i=0; i<4; i++, pdisp++) {
-			sptr = fptr + (4*buf[2]+i);
-			*pdisp = *sptr;
-		}
-		*pdisp = 0x00;
-		pdisp++;
-	}
+	*pdisp = 0x00;
+	pdisp++;
+
+	for(i=0; i<5; i++, pdisp++) { *pdisp = temperature_font[5*(humi%10)+i]; }
+
+// %	
+	*pdisp = 0x00;
+	pdisp++;
 	*pdisp = 0x00;
 	pdisp++;
 	*pdisp = 0x62;
@@ -574,6 +529,10 @@ void showHumidity(void)
 	*pdisp = 0x13;
 	pdisp++;
 	*pdisp = 0x23;
+	pdisp++;
+	*pdisp = 0x00;
+	pdisp++;
+	*pdisp = 0x00;
 	pdisp++;
 
 	return;
@@ -647,6 +606,7 @@ void showMenu(void)
 		case MODE_EDIT_BRIGHT: sptr = &pic_Bright[0];break;
 		case MODE_EDIT_TIME_COEF: sptr = &pic_TimeCoef[0];break;
 		case MODE_EDIT_TEMP_COEF: sptr = &pic_TempCoef[0];break;
+		case MODE_TIMER_SET: sptr = &pic_Timer[0]; break;
 		case MODE_EXIT: sptr = &pic_Exit[0];break;
 		default:break;
 	}
@@ -1031,6 +991,53 @@ void showTempCoefEdit(void)
 	return;
 }
 
+void changeTimerSet(int8_t diff)
+{
+	checkParam(&timerSet, diff, 0, 99);	
+}
+
+void showTimerStart()
+{
+	if ( (rtc.sec - timerSecStart >= 1) && (timerSet >= 1) )
+	{
+		timerSecStart = rtc.sec;
+		secSum++;
+		secMin--;
+	}
+
+	showTimer(timerSet-1, secMin);
+
+	if ( secSum == 60 )
+	{
+		secSum = 0;
+		secMin = 59;
+		
+		if ( timerSet >= 1 )
+		{
+			timerSet--;
+		}
+	}
+
+	if ( timerSet == 0 )
+	{	
+		showTimer(0, 0);
+		alarmTimer = 60 * (uint16_t)eep.alarmTimeout;
+		dispMode = MODE_TIMER_END;
+	}
+}
+
+void showTimer(uint8_t min, uint8_t sec)
+{
+	uint8_t i;
+	pdisp = &disp[0];
+
+	showNumber(min, 0, 0);
+
+	for( i=0; i<4; i++, pdisp++ ) *pdisp = dot_font[12+i]; // show semicolon
+
+	showNumber(sec, 0, 0);
+}
+
 void wiNext(void)
 {
 	if( screenTime > widgets[widgetNumber].sec ) {
@@ -1139,6 +1146,7 @@ void renderHoliday(uint8_t length, char *str)
 
 	return;
 }
+
 /*
 static char *mkNumberString(int16_t value, uint8_t width, uint8_t lead)
 {

@@ -4,7 +4,8 @@
 #include "sys.h"
 
 #define SI7021_ADDR 0x40 << 1
-#define SI7021_DELAY_INTERVAL 20
+// #define SI7021_DELAY_INTERVAL 20
+#define SI7021_DELAY_INTERVAL 25
 
 // I2C commands
 #define RH_READ														0xE5
