@@ -128,8 +128,6 @@ void main(void)
 							case MODE_EDIT_TIME: {rtc.etm = RTC_HOUR; dispMode = menuNumber; break;}
 							case MODE_EDIT_DATE: {rtc.etm = RTC_YEAR; dispMode = menuNumber; break;}
 							case MODE_EDIT_ALARM: {alarm.etm = ALARM_ON; dispMode = menuNumber; break;}
-							case MODE_EDIT_FONT:
-							case MODE_EDIT_DOT:
 							case MODE_EXIT:
 							{
 								dispMode = MODE_MAIN;
@@ -141,6 +139,8 @@ void main(void)
 							case MODE_EDIT_BRIGHT:
 							case MODE_EDIT_TEMP_COEF:
 							case MODE_EDIT_TIME_COEF:
+							case MODE_EDIT_FONT:
+							case MODE_EDIT_DOT:
 							case MODE_TIMER_SET:
 							{
 								dispMode = menuNumber;

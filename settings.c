@@ -7,8 +7,8 @@ static code EEP_Param eepDef = {0xFF, 0, 2, 0, 0, 1, 5, 0, 7, 30, 1, 1, 1, 1, 1,
 	//pageBlock, hourSignal, dispMode, dotMode, fontMode, alarmTimeout, bright, on, hour,
 	//min, mon, tue, wed, thu, fri, sat, sun, tempcoef, timecoef, tempsource
 
-code EEP_Param eepMin = {0xFF, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -9, -128, 0};
-code EEP_Param eepMax = {0xFF, 1, 5, 4, 4, 1, 6, 1, 23, 59, 1, 1, 1, 1, 1, 1, 1, 9, 127, 2};
+code EEP_Param eepMin = {0xFF, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -9, -128, 0};
+code EEP_Param eepMax = {0xFF, 1, 5, 6, 5, 1, 6, 1, 23, 59, 1, 1, 1, 1, 1, 1, 1, 9, 127, 2};
 
 static uint8_t workSector = 0;
 
