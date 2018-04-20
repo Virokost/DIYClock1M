@@ -316,10 +316,10 @@ void main(void)
 			case MODE_EDIT_DATE: { showDateEdit(); break; }
 			case MODE_EDIT_ALARM: { showAlarmEdit(); break; }
 			case MODE_EDIT_HOURSIGNAL: { showHourSignalEdit(); break; }
-			case MODE_EDIT_FONT: { showFontEdit(); break; }
-			case MODE_EDIT_DISP: { showDispEdit(); break; }
-			case MODE_EDIT_DOT: { showDotEdit(); break; }
-			case MODE_EDIT_BRIGHT: { showBrightEdit(); break; }
+			case MODE_EDIT_FONT: { showEditType(eep.fontMode); break; }
+			case MODE_EDIT_DISP: { showEditType(eep.dispMode); break; }
+			case MODE_EDIT_DOT: { showEditType(eep.dotMode); break; }
+			case MODE_EDIT_BRIGHT: { showEditType(eep.bright); break; }
 			case MODE_EDIT_TIME_COEF: { showTimeCoefEdit(); break; }
 			case MODE_EDIT_TEMP_COEF: { showTempCoefEdit(); break; }
 			case MODE_TIMER_SET: { showTimer(timerSet, 0); break; }

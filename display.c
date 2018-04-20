@@ -831,6 +831,20 @@ void showAlarmEdit(void)
 	return;
 }
 
+void showEditType(uint8_t type)
+{
+	uint8_t i;
+
+	pdisp = &disp[0];
+
+	for(i=0; i<16; i++, pdisp++) *pdisp = pic_Type[i];
+	
+	*pdisp = 0x00;
+	pdisp++;
+
+	for(i=0; i<5; i++, pdisp++) *pdisp = temperature_font[5*type+i];
+}
+
 void changeFont(int8_t diff)
 {
 	checkParam(&eep.fontMode, diff, eepMin.fontMode/*1*/, eepMax.fontMode/*5*/);
@@ -838,40 +852,9 @@ void changeFont(int8_t diff)
 	return;
 }
 
-void showFontEdit(void)
-{
-	uint8_t i;
-
-	pdisp = &disp[0];
-
-	for(i=0; i<16; i++, pdisp++) *pdisp = pic_Type[i];
-	
-	*pdisp = 0x00;
-	pdisp++;
-
-	for(i=0; i<5; i++, pdisp++) *pdisp = temperature_font[5*eep.fontMode+i];
-	
-	return;
-}
-
 void changeDisp(int8_t diff)
 {
 	checkParam(&eep.dispMode, diff, eepMin.dispMode/*1*/, eepMax.dispMode/*5*/);
-
-	return;
-}
-
-void showDispEdit(void)
-{
-	uint8_t i;
-
-	pdisp = &disp[0];
-
-	for(i=0; i<16; i++, pdisp++) *pdisp = pic_Type[i];
-	*pdisp = 0x00;
-	pdisp++;
-
-	for(i=0; i<5; i++, pdisp++) *pdisp = temperature_font[5*eep.dispMode+i];
 
 	return;
 }
@@ -883,43 +866,11 @@ void changeDot(int8_t diff)
 	return;
 }
 
-void showDotEdit(void)
-{
-	uint8_t i;
-
-	pdisp = &disp[0];
-
-	for(i=0; i<16; i++, pdisp++) *pdisp = pic_Type[i];
-	
-	*pdisp = 0x00;
-	pdisp++;
-
-	for(i=0; i<5; i++, pdisp++) *pdisp = temperature_font[5*eep.dotMode+i];
-
-	return;
-}
-
 void changeBright(int8_t diff)
 {
 	checkParam(&eep.bright, diff, eepMin.bright/*0*/, eepMax.bright/*6*/);
 	displayBright = eep.bright;
 	autoBright();
-
-	return;
-}
-
-void showBrightEdit(void)
-{
-	uint8_t i;
-
-	pdisp = &disp[0];
-
-	for(i=0; i<16; i++, pdisp++) *pdisp = pic_BrEdit[i];
-	
-	*pdisp = 0x00;
-	pdisp++;
-
-	for(i=0; i<5; i++, pdisp++) *pdisp = temperature_font[5*eep.bright+i];
 
 	return;
 }
