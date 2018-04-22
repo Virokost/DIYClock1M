@@ -15,6 +15,7 @@
 uint8_t data disp[DISPLAYSIZE];
 uint8_t render_buffer_size = 0;
 int16_t scroll_index = -1;
+int16_t scroll_index_string = -1;
 uint8_t xdata render_buffer[RENDSERBUFFERSIZE];
 uint8_t *pdisp;
 uint8_t code *fptr;
@@ -23,32 +24,19 @@ uint8_t dispMode = MODE_MAIN;
 uint8_t code hourbright[12] = { 0x00, 0x00, 0x12, 0x34, 0x55, 0x55, 0x55, 0x55, 0x55, 0x54, 0x32, 0x10 };
 
 uint8_t menuNumber = MODE_EDIT_TIME;
-uint8_t screenTime = 0;
+uint16_t screenTime = 0;
+uint16_t screenTimeString = 0;
 uint8_t widgetNumber = 0;
+uint8_t stringNumber = 0;
 bit reversed;
 bit refstart;
-uint8_t refcount;
-uint8_t dotcount;
-uint8_t timerSet = 0;
-uint8_t timerSecStart;
-uint8_t secSum;
-uint8_t secMin;
-
-void wiNext(void);
-void wiTime(void);
-void wiHoly(void);
-
- Widget code widgets[9] = {
-	{60, wiTime}, /* WI_TIME 60 - time in sec after which would be shown YEAR*/
-	{2, wiNext}, /* WI_YEAR */ 
-	{2, wiNext}, /* WI_DATE */ 
-	{2, wiNext}, /* WI_WEEK */ 
-	{5, wiNext}, /* WI_MINSEC */ 
-	{2, wiNext}, /* WI_TEMP */ 
-	{2, wiNext}, /* WI_PRES */ 
-	{5, wiNext}, /* WI_HUMI */ 
-	{0, wiHoly} /* WI_HOLY */ 
- };
+uint16_t refcount;
+uint16_t refcountString;
+uint16_t dotcount;
+int8_t timerSet = 0;
+uint16_t timerSecStart;
+uint16_t secSum;
+uint16_t secMin;
 
 void displayInit(void)
 {
@@ -284,7 +272,7 @@ void showDot(void)
 	return;
 }
 
-void showNumber(uint8_t num, uint8_t clean, uint8_t dig )
+void showNumber(uint16_t num, uint8_t clean, uint8_t dig )
 {
 	uint8_t i, code *sptr;
 
@@ -601,6 +589,20 @@ void autoBright(void)
 	return;
 }
 
+void showString()
+{
+	pdisp = &disp[0];
+	updateFont();
+	autoBright();
+
+	switch(stringNumber)
+	{
+		case WI_STRING_TIME: { showTime(); break; }
+		case WI_STRING: { showRenderBufferString(); break; }
+		default: { showTime(); break;}
+	}
+}
+
 void showMainScreen(void)
 {
 	pdisp = &disp[0];
@@ -624,7 +626,7 @@ void showMainScreen(void)
 	return;
 }
 
-void checkParam(int8_t *param, int8_t diff, int8_t paramMin, int8_t paramMax)
+void checkParam(int8_t *param, uint8_t diff, int8_t paramMin, int8_t paramMax)
 {
 	*param += diff;
 
@@ -1002,7 +1004,7 @@ void showTempCoefEdit(void)
 	return;
 }
 
-void changeTimerSet(int8_t diff)
+void changeTimerSet(uint8_t diff)
 {
 	checkParam(&timerSet, diff, 0, 99);	
 }
@@ -1048,14 +1050,41 @@ void showTimer(uint8_t min, uint8_t sec)
 	showNumber(sec, 0, 0);
 }
 
-void wiNext(void)
+void wiString(uint16_t wiSec)
 {
-	if( screenTime > widgets[widgetNumber].sec )
+	if( screenTimeString > wiSec )
+	{
+		stringNumber++;
+		screenTimeString = 0;
+		
+		if( stringNumber > 2 ) stringNumber = WI_STRING_TIME;
+		
+		if ( stringNumber == WI_STRING_TIME ) stringNumber = WI_STRING;
+		
+		if(stringNumber == WI_STRING)
+		{
+			if( holiday && (dispMode == MODE_MAIN) )
+			{
+				dispMode = MODE_STRING;
+				scroll_index_string = 0;
+			}
+			else
+			{
+				stringNumber = WI_STRING_TIME;
+				scroll_index_string = -1;
+			}
+		}
+	}
+}
+
+void wiNext(uint16_t wiSec)
+{
+	if( screenTime > wiSec )
 	{
 		widgetNumber++;
 		screenTime = 0;
 		
-		if( widgetNumber > ELEMENTS(widgets) ) widgetNumber = WI_TIME;
+		if( widgetNumber > WIDGET_NUMBER ) widgetNumber = WI_TIME;
 		
 		if(widgetNumber == WI_PRES && !bmxx80HaveSensor()) widgetNumber = WI_HUMI;
 		
@@ -1064,7 +1093,7 @@ void wiNext(void)
 		
 		if(widgetNumber == WI_HOLY)
 		{
-			if(holiday) scroll_index = 0;
+			if( holiday && (dispMode == MODE_MAIN) ) scroll_index = 0;
 			else
 			{
 				widgetNumber = WI_TIME;
@@ -1072,18 +1101,6 @@ void wiNext(void)
 			}
 		}
 	}
-}
-
-void wiTime(void)
-{
-	if(eep.dispMode == 5) screenTime = 0; // DISP TYP = 5 - only time would be shown 
-	
-	wiNext();
-}
-
-void wiHoly(void)
-{
-	if(scroll_index < 0) wiNext();
 }
 
 void showRenderBuffer(void)
@@ -1095,6 +1112,24 @@ void showRenderBuffer(void)
 	{
 		scroll_index = -1;
 		widgetNumber = 0; screenTime = 0;
+	}
+
+	for(i=0; i<DISPLAYSIZE; i++)
+	{
+		if(( ind + i >= 0 )&&(ind + i < render_buffer_size )) disp[i] = render_buffer[(uint8_t)(ind + i)];
+		else disp[i] = 0x00;
+	}
+}
+
+void showRenderBufferString()
+{
+	uint8_t i;
+	int16_t ind = scroll_index_string - DISPLAYSIZE;
+
+	if( scroll_index_string > (render_buffer_size + DISPLAYSIZE ))
+	{
+		scroll_index_string = -1;
+		screenTimeString = 0; stringNumber = 0; dispMode = MODE_MAIN;
 	}
 
 	for(i=0; i<DISPLAYSIZE; i++)

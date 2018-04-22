@@ -37,6 +37,7 @@ void cancelEdit(void)
 	EA = 1;
 	dispMode = MODE_MAIN;
 	widgetNumber = 0;
+	stringNumber = 0;
 
 	return;
 }
@@ -115,7 +116,7 @@ void main(void)
 					dispMode = MODE_WIDGET;
 					
 					if ( widgetNumber == 0 ) widgetNumber = 1;
-					else if ( widgetNumber > 0 && widgetNumber < ELEMENTS(widgets) - 2 ) widgetNumber++;
+					else if ( widgetNumber > 0 && widgetNumber < WIDGET_NUMBER - 2 ) widgetNumber++;
 				}
 				
 				switch (dispMode)
@@ -264,6 +265,7 @@ void main(void)
 					case MODE_EDIT_BRIGHT:
 					case MODE_EDIT_TEMP_COEF:
 					case MODE_EDIT_TIME_COEF:
+					case MODE_STRING:
 					case MODE_EXIT:
 					{
 						cancelEdit();
@@ -311,6 +313,7 @@ void main(void)
 		switch(dispMode)
 		{ // begin switch4 dispMode
 			case MODE_MAIN: { showMainScreen(); break; }
+			case MODE_STRING: { showString(); break; }
 			case MODE_MENU: { showMenu(); break; }
 			case MODE_EDIT_TIME: { showTimeEdit(); break; } 
 			case MODE_EDIT_DATE: { showDateEdit(); break; }
@@ -336,20 +339,63 @@ void main(void)
 
 		dotcount++;
 		refcount++;
+		refcountString++;
 		
 		if( holiday&&(widgetNumber == WI_HOLY) && (refcount % 5) == 0 )
 		{
 			if(scroll_index >=0) scroll_index++;
 		}
-		
+
+		if( holiday&&(stringNumber == WI_STRING) && (refcountString % 5) == 0 )
+		{
+			if(scroll_index_string >=0) scroll_index_string++;
+		}
+
 		if( dotcount > 119 ) dotcount = 0;
-			
+		
+		if(eep.dispMode == 5) // show the holiday string when only time is shown
+		{
+			if( refcountString > 59 )
+			{
+				refcountString = 0;
+				screenTimeString++;
+
+				switch(stringNumber)
+				{ // stringNumber switch begin
+					case WI_STRING_TIME:
+					{ 
+						wiString(3600); // the string would be shown every 3600 seconds
+						break; 
+					} 
+					case WI_STRING:   {  if(scroll_index_string < 0) wiString(0);  break; }
+				}  // stringNumber switch end
+			}
+		}
+
 		if( refcount > 59 )
 		{
 			refcount = 0;
 			screenTime++;
-			((__ptr_wi_func)widgets[widgetNumber].func)();
+
+			switch(widgetNumber)
+			{ // widgetNumber switch begin
+				case WI_TIME:
+				{ 
+					if(eep.dispMode == 5) screenTime = 0; // DISP TYP = 5 - only time would be shown
+					wiNext(60); // 60 - time in seconds after which would be shown YEAR
+					break; 
+				} 
+				case WI_YEAR:   { wiNext(2);  break; }
+				case WI_DATE:   { wiNext(2);  break; }
+				case WI_WEEK:   { wiNext(2);  break; }
+				case WI_MINSEC: { wiNext(5);  break; }
+				case WI_TEMP:   { wiNext(2);  break; }
+				case WI_PRES:   { wiNext(2);  break; }
+				case WI_HUMI:   { wiNext(5);  break; }
+				case WI_HOLY:   {  if(scroll_index < 0) wiNext(0);  break; }
+			}  // widgetNumber switch end
 		}
+		
 	} // end main while loop
 	
 	return;
