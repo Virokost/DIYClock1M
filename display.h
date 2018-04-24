@@ -6,7 +6,12 @@
 
 #define PARAM_UP	1
 #define PARAM_DOWN	-1
+#define DISPLAYSIZE 22
+#define RENDSERBUFFERSIZE 254
+#define hbd(a,b) a | (b << 4)
 #define WIDGET_NUMBER 9
+#define WIDGET_SHOW_TIME 60  // 60 - time in seconds after which would be shown YEAR
+#define STRING_SHOW_TIME 3600  // the string would be shown every 3600 seconds
 
 enum
 {
@@ -23,6 +28,7 @@ enum
 	MODE_TIMER_SET,
 	MODE_EDIT_FONT,
 	MODE_EDIT_DOT,
+	MODE_EDIT_STRING_SHOW,
 	MODE_EXIT,
 	MODE_WIDGET,
 	MODE_TIMER_START,
@@ -59,10 +65,6 @@ enum
 	TS_BMP
 };
 
-#define DISPLAYSIZE 22
-#define RENDSERBUFFERSIZE 254
-#define hbd(a,b) a | (b << 4)
-
 extern uint8_t dispMode;
 extern uint8_t data disp[DISPLAYSIZE];
 extern uint8_t xdata render_buffer[RENDSERBUFFERSIZE];
@@ -83,6 +85,7 @@ extern int8_t timerSet;
 extern uint16_t timerSecStart;
 extern uint16_t secSum;
 extern uint16_t secMin;
+extern int8_t eepromStringShow;
 extern bit reversed;
 
 void displayInit(void);
@@ -118,5 +121,7 @@ void renderHoliday(uint8_t length, char *str);
 void wiNext(uint16_t wiSec);
 void wiString(uint16_t wiSec);
 void showString();
+void changeStringShow(int8_t diff);
+void showStringShowEdit();
 
 #endif /* _DISPLAY_H_ */

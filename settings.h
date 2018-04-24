@@ -4,31 +4,6 @@
 #include "sys.h"
 #include "alarm.h"
 
-/*
-// enum {
-	EEP_PAGEBLOCK = 0,
-	EEP_HOURSIGNAL,
-	EEP_DISPMODE,
-	EEP_DOTMODE,
-	EEP_FONTMODE,
-	EEP_ALARMTIMEOUT,
-	EEP_BRIGHT,
-	EEP_ALARM_ON,
-	EEP_ALARM_HOUR,
-	EEP_ALARM_MIN,
-	EEP_ALARM_MON,
-	EEP_ALARM_TUE,
-	EEP_ALARM_WED,
-	EEP_ALARM_THU,
-	EEP_ALARM_FRI,
-	EEP_ALARM_SAT,
-	EEP_ALARM_SUN,
-	EEP_TEMP_COEF,
-	EEP_TIME_COEF,
-	EEP_TEMP_SOURCE
-};
-*/
-
 typedef struct {
 	uint8_t pageBlock;
 	uint8_t hourSignal;
@@ -53,6 +28,7 @@ typedef struct {
 	int8_t tempcoef;
 	int8_t timecoef;
 	int8_t tempsource;
+	int8_t stringShow;
 } EEP_Param;
 
 extern EEP_Param eep;

@@ -37,6 +37,7 @@ int8_t timerSet = 0;
 uint16_t timerSecStart;
 uint16_t secSum;
 uint16_t secMin;
+int8_t eepromStringShow;
 
 void displayInit(void)
 {
@@ -645,33 +646,32 @@ void changeMenu(int8_t diff)
 	return;
 }
 
-void showMenu(void)
+void showMenu()
 {
 	uint8_t i, code *sptr;
 
 	switch(menuNumber)
 	{
-		case MODE_EDIT_TIME: sptr = &pic_Time[0];break;
-		case MODE_EDIT_DATE: sptr = &pic_Date[0];break;
-		case MODE_EDIT_ALARM: sptr = &pic_Alarm[0];break;
-		case MODE_EDIT_HOURSIGNAL: sptr = &pic_HourSignal[0];break;
-		case MODE_EDIT_FONT: sptr = &pic_Font[0];break;
-		case MODE_EDIT_DISP: sptr = &pic_Disp[0];break;
-		case MODE_EDIT_DOT: sptr = &pic_Dot[0];break;
-		case MODE_EDIT_BRIGHT: sptr = &pic_Bright[0];break;
-		case MODE_EDIT_TIME_COEF: sptr = &pic_TimeCoef[0];break;
-		case MODE_EDIT_TEMP_COEF: sptr = &pic_TempCoef[0];break;
+		case MODE_EDIT_TIME: sptr = &pic_Time[0]; break;
+		case MODE_EDIT_DATE: sptr = &pic_Date[0]; break;
+		case MODE_EDIT_ALARM: sptr = &pic_Alarm[0]; break;
+		case MODE_EDIT_HOURSIGNAL: sptr = &pic_HourSignal[0]; break;
+		case MODE_EDIT_FONT: sptr = &pic_Font[0]; break;
+		case MODE_EDIT_DISP: sptr = &pic_Disp[0]; break;
+		case MODE_EDIT_DOT: sptr = &pic_Dot[0]; break;
+		case MODE_EDIT_BRIGHT: sptr = &pic_Bright[0]; break;
+		case MODE_EDIT_TIME_COEF: sptr = &pic_TimeCoef[0]; break;
+		case MODE_EDIT_TEMP_COEF: sptr = &pic_TempCoef[0]; break;
+		case MODE_EDIT_STRING_SHOW: sptr = &pic_StrShow[0]; break;
 		case MODE_TIMER_SET: sptr = &pic_Timer[0]; break;
-		case MODE_EXIT: sptr = &pic_Exit[0];break;
-		default:break;
+		case MODE_EXIT: sptr = &pic_Exit[0]; break;
+		default: break;
 	}
 	
 	for(i=0; i<DISPLAYSIZE; i++, sptr++)
 	{
 		disp[i] = *sptr;
 	}
-
-	return;
 }
 
 void showTimeEdit(void)
@@ -1048,6 +1048,21 @@ void showTimer(uint8_t min, uint8_t sec)
 	for( i=0; i<4; i++, pdisp++ ) *pdisp = dot_font[12+i]; // show semicolon
 
 	showNumber(sec, 0, 0);
+}
+
+void changeStringShow(int8_t diff)
+{
+	checkParam(&eep.stringShow, diff, eepMin.stringShow/*0*/, eepMax.stringShow/*1*/);
+}
+
+void showStringShowEdit()
+{
+	uint8_t i, code *sptr;
+
+	if(eep.stringShow) sptr = &pic_On[0];
+	else sptr = &pic_Off[0];
+	
+	for(i=0; i<DISPLAYSIZE; i++, sptr++) disp[i] = *sptr;
 }
 
 void wiString(uint16_t wiSec)

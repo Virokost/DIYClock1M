@@ -129,12 +129,9 @@ void main(void)
 							case MODE_EDIT_TIME: {rtc.etm = RTC_HOUR; dispMode = menuNumber; break;}
 							case MODE_EDIT_DATE: {rtc.etm = RTC_YEAR; dispMode = menuNumber; break;}
 							case MODE_EDIT_ALARM: {alarm.etm = ALARM_ON; dispMode = menuNumber; break;}
-							case MODE_EXIT:
-							{
-								dispMode = MODE_MAIN;
-								widgetNumber = 0;
-								break;
-							}
+							case MODE_EXIT: { dispMode = MODE_MAIN; widgetNumber = 0; break; }
+							case MODE_TIMER_START: { showTimerStart(); break; }
+							case MODE_EDIT_STRING_SHOW: {	eepromStringShow = eep.stringShow; }
 							case MODE_EDIT_HOURSIGNAL:
 							case MODE_EDIT_DISP:
 							case MODE_EDIT_BRIGHT:
@@ -142,14 +139,8 @@ void main(void)
 							case MODE_EDIT_TIME_COEF:
 							case MODE_EDIT_FONT:
 							case MODE_EDIT_DOT:
-							case MODE_TIMER_SET:
-							{
-								dispMode = menuNumber;
-								break;
-							}
-							case MODE_TIMER_START: { showTimerStart(); break; }
-							default:
-								break;
+							case MODE_TIMER_SET: { dispMode = menuNumber; break; }
+							default: { break; }
 						}  // end switch menuNumber
 						break;
 					}
@@ -193,10 +184,6 @@ void main(void)
 						}
 						break;
 					}
-					case MODE_EDIT_TIME_COEF:
-					{
-						rtcSavePPM();
-					}
 					case MODE_TIMER_SET:
 					{
 						dispMode = MODE_TIMER_START;
@@ -205,6 +192,20 @@ void main(void)
 						secMin = 59;
 						break;
 					}
+					case MODE_EDIT_STRING_SHOW:
+					{
+						if ( !(eepromStringShow && eep.stringShow) ) // if eeprom = 0 and eep = 0; or eeprom = 0
+						{ // and eep = 1; or eeprom = 1 and eep = 0:
+							stringNumber = 0;
+							screenTimeString = 0;
+							scroll_index_string = -1;
+						}
+						
+						saveEdit();
+						resetDispLoop();
+						break;
+					}
+					case MODE_EDIT_TIME_COEF: { rtcSavePPM(); }
 					case MODE_EDIT_HOURSIGNAL:
 					case MODE_EDIT_FONT:
 					case MODE_EDIT_DISP:
@@ -212,19 +213,11 @@ void main(void)
 					case MODE_EDIT_BRIGHT:
 					case MODE_EDIT_TEMP_COEF:
 					case MODE_TIMER_END:
-					case MODE_EXIT:
-					{
-						saveEdit();
-						resetDispLoop();
-						break;
-					}
+					case MODE_EXIT: { saveEdit(); resetDispLoop(); break; }
 				}  // end switch1 dispMode
 				break;
 			}  // end BTN_0 case
-			case BTN_1:
-			{ // begin BTN_1 case
-				direction = PARAM_UP;
-			} // end BTN_1 case
+			case BTN_1: { direction = PARAM_UP; }
 			case BTN_2:
 			{ // begin BTN_2 case
 				if (cmd == BTN_2)
@@ -243,6 +236,7 @@ void main(void)
 					case MODE_EDIT_BRIGHT: { changeBright(direction); break; }
 					case MODE_EDIT_TIME_COEF: { changeTimeCoef(direction); break; }
 					case MODE_EDIT_TEMP_COEF: { changeTempCoef(direction); break; }
+					case MODE_EDIT_STRING_SHOW: { changeStringShow(direction); break; }
 					case MODE_TIMER_SET: { changeTimerSet(direction); break; }
 					case MODE_EXIT: {break;}
 				}   // end switch2 dispMode
@@ -254,10 +248,7 @@ void main(void)
 				{ // begin switch3 dispMode
 					case MODE_MAIN: { dispMode = MODE_MENU; /*menuNumber = MODE_EDIT_TIME;*/ break; }
 					case MODE_MENU: { dispMode = MODE_MAIN; break; }
-					case MODE_EDIT_ALARM:
-					{
-						alarmInit();
-					}
+					case MODE_EDIT_ALARM: { alarmInit(); }
 					case MODE_EDIT_HOURSIGNAL:
 					case MODE_EDIT_FONT:
 					case MODE_EDIT_DISP:
@@ -265,49 +256,22 @@ void main(void)
 					case MODE_EDIT_BRIGHT:
 					case MODE_EDIT_TEMP_COEF:
 					case MODE_EDIT_TIME_COEF:
+					case MODE_EDIT_STRING_SHOW:
 					case MODE_STRING:
-					case MODE_EXIT:
-					{
-						cancelEdit();
-					}
-					case MODE_TIMER_SET:
-					case MODE_TIMER_START:
-					{ 
-						timerSet = 0;
-						cancelEdit();
-					}
+					case MODE_EXIT: { cancelEdit(); }
 					case MODE_EDIT_TIME:
-					case MODE_EDIT_DATE:
-					{
-						resetDispLoop();
-					}
+					case MODE_EDIT_DATE: { resetDispLoop(); break; }
+					case MODE_TIMER_SET:
+					case MODE_TIMER_START: { timerSet = 0; cancelEdit(); resetDispLoop(); break; }
 				} // end switch3 dispMode
 				break;
 			} // end BTN_0_LONG case
-			case BTN_1_LONG:
-			{
-				break;
-			}
-			case BTN_2_LONG:
-			{
-				break;
-			}
-			case BTN_0_LONG | BTN_1_LONG:
-			{
-				break;
-			}
-			case BTN_0_LONG | BTN_2_LONG:
-			{
-				break;
-			}
-			case BTN_1_LONG | BTN_2_LONG:
-			{
-				break;
-			}
-			case BTN_0_LONG | BTN_1_LONG | BTN_2_LONG:
-			{
-				break;
-			}
+			case BTN_1_LONG: { break; }
+			case BTN_2_LONG: { break; }
+			case BTN_0_LONG | BTN_1_LONG: { break; }
+			case BTN_0_LONG | BTN_2_LONG: { break; }
+			case BTN_1_LONG | BTN_2_LONG: { break; }
+			case BTN_0_LONG | BTN_1_LONG | BTN_2_LONG: { break; }
 		} // end switch cmd
 
 		switch(dispMode)
@@ -325,6 +289,7 @@ void main(void)
 			case MODE_EDIT_BRIGHT: { showEditType(eep.bright); break; }
 			case MODE_EDIT_TIME_COEF: { showTimeCoefEdit(); break; }
 			case MODE_EDIT_TEMP_COEF: { showTempCoefEdit(); break; }
+			case MODE_EDIT_STRING_SHOW: { showStringShowEdit(); break; }
 			case MODE_TIMER_SET: { showTimer(timerSet, 0); break; }
 			case MODE_TIMER_START:
 			{
@@ -341,35 +306,11 @@ void main(void)
 		refcount++;
 		refcountString++;
 		
+		if( dotcount > 119 ) dotcount = 0;
+
 		if( holiday&&(widgetNumber == WI_HOLY) && (refcount % 5) == 0 )
 		{
 			if(scroll_index >=0) scroll_index++;
-		}
-
-		if( holiday&&(stringNumber == WI_STRING) && (refcountString % 5) == 0 )
-		{
-			if(scroll_index_string >=0) scroll_index_string++;
-		}
-
-		if( dotcount > 119 ) dotcount = 0;
-		
-		if(eep.dispMode == 5) // show the holiday string when only time is shown
-		{
-			if( refcountString > 59 )
-			{
-				refcountString = 0;
-				screenTimeString++;
-
-				switch(stringNumber)
-				{ // stringNumber switch begin
-					case WI_STRING_TIME:
-					{ 
-						wiString(3600); // the string would be shown every 3600 seconds
-						break; 
-					} 
-					case WI_STRING:   {  if(scroll_index_string < 0) wiString(0);  break; }
-				}  // stringNumber switch end
-			}
 		}
 
 		if( refcount > 59 )
@@ -378,22 +319,42 @@ void main(void)
 			screenTime++;
 
 			switch(widgetNumber)
-			{ // widgetNumber switch begin
+			{
 				case WI_TIME:
 				{ 
 					if(eep.dispMode == 5) screenTime = 0; // DISP TYP = 5 - only time would be shown
-					wiNext(60); // 60 - time in seconds after which would be shown YEAR
+					wiNext(WIDGET_SHOW_TIME);
 					break; 
 				} 
-				case WI_YEAR:   { wiNext(2);  break; }
-				case WI_DATE:   { wiNext(2);  break; }
-				case WI_WEEK:   { wiNext(2);  break; }
-				case WI_MINSEC: { wiNext(5);  break; }
-				case WI_TEMP:   { wiNext(2);  break; }
-				case WI_PRES:   { wiNext(2);  break; }
-				case WI_HUMI:   { wiNext(5);  break; }
-				case WI_HOLY:   {  if(scroll_index < 0) wiNext(0);  break; }
-			}  // widgetNumber switch end
+				case WI_YEAR:   { wiNext(2); break; }
+				case WI_DATE:   { wiNext(2); break; }
+				case WI_WEEK:   { wiNext(2); break; }
+				case WI_MINSEC: { wiNext(5); break; }
+				case WI_TEMP:   { wiNext(2); break; }
+				case WI_PRES:   { wiNext(2); break; }
+				case WI_HUMI:   { wiNext(5); break; }
+				case WI_HOLY:   { if(scroll_index < 0) wiNext(0); break; }
+			}
+		}
+
+		if ( holiday && eep.stringShow && (eep.dispMode == 5) ) // show the holiday string when 
+		{ // only time is shown, it is the day of holiday and stringShow - is On
+			if( holiday && (stringNumber == WI_STRING) && (refcountString % 5) == 0 )
+			{
+				if(scroll_index_string >=0) scroll_index_string++;
+			}
+
+			if( refcountString > 59 )
+			{
+				refcountString = 0;
+				screenTimeString++;
+
+				switch(stringNumber)
+				{
+					case WI_STRING_TIME: { wiString(STRING_SHOW_TIME); break; } 
+					case WI_STRING: { if(scroll_index_string < 0) wiString(0); break; }
+				}
+			}
 		}
 		
 	} // end main while loop
