@@ -123,5 +123,6 @@ void wiString(uint16_t wiSec);
 void showString();
 void changeStringShow(int8_t diff);
 void showStringShowEdit();
+void showCoef(int8_t timeTempCoef);
 
 #endif /* _DISPLAY_H_ */

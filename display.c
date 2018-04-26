@@ -393,7 +393,7 @@ void showTemperature(void)
 		temp = rtc.temp*100;
 	}
 
-	temp += eep.tempcoef;
+	temp += eep.tempcoef*100;
 	
 	for (i = 0; i < 5; i++) buf[i] = 0;
 
@@ -904,7 +904,7 @@ void changeTimeCoef(int8_t diff)
 	return;
 }
 
-void showTimeCoefEdit(void)
+void showCoef(int8_t timeTempCoef)
 {
 	static uint8_t buf[3];
 	uint8_t code *sptr;
@@ -913,15 +913,15 @@ void showTimeCoefEdit(void)
 	bit sign;
 
 	pdisp = &disp[0];
-	sign = (eep.timecoef >= 0)? 0: 1;
+	sign = (timeTempCoef >= 0)? 0: 1;
 
 	if(sign)
 	{
-		coef = -eep.timecoef;
+		coef = -timeTempCoef;
 	}
 	else
 	{
-		coef = eep.timecoef;
+		coef = timeTempCoef;
 	}
 	
 	for (i = 0; i < 3; i++) buf[i] = 0;
@@ -985,23 +985,21 @@ void showTimeCoefEdit(void)
 		sptr = fptr + (4*buf[2]+i);
 		*pdisp = *sptr;
 	}
+}
 
-	return;
+void showTimeCoefEdit()
+{
+	showCoef(eep.timecoef);
 }
 
 void changeTempCoef(int8_t diff)
 {
 	checkParam(&eep.tempcoef, diff, eepMin.tempcoef/*-9*/, eepMax.tempcoef/*9*/);
-
-	return;
 }
 
-void showTempCoefEdit(void)
+void showTempCoefEdit()
 {
-	pdisp = &disp[0];
-	showTemperature();
-
-	return;
+	showCoef(eep.tempcoef);
 }
 
 void changeTimerSet(uint8_t diff)
