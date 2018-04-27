@@ -176,11 +176,11 @@ void updateFont(void)
 {
 	switch(eep.fontMode) {
 		default:
-		case 1: {fptr = &num_font1[0]; break; }
-		case 2: {fptr = &num_font2[0]; break; }
-		case 3: {fptr = &num_font3[0]; break; }
-		case 4: {fptr = &num_font4[0]; break; }
-		case 5: {fptr = &num_font5[0]; break; }
+		case 0: {fptr = &num_font1[0]; break; }
+		case 1: {fptr = &num_font2[0]; break; }
+		case 2: {fptr = &num_font3[0]; break; }
+		case 3: {fptr = &num_font4[0]; break; }
+		case 4: {fptr = &num_font5[0]; break; }
 	}
 
 	return;
@@ -215,14 +215,14 @@ void showDot(void)
 	switch(eep.dotMode)
 	{
 		default:
-		case 1:
+		case 0:
 		{
 			if (dotcount < 30) { dot = 0; } // dont show semicolon
 			else if (dotcount < 90) { dot = 3; } // show semicolon
 			else { dot = 0; } // dont show semicolon
 			break;
 		}
-		case 2:
+		case 1:
 		{
 			if (dotcount < 30) dot = 2; // show two points together
 			else if (dotcount < 90) dot = 3; // show semicolon
@@ -230,7 +230,8 @@ void showDot(void)
 			break;
 		}
 			
-		case 3: {
+		case 2:
+		{
 			if (dotcount < 10) { dot = 0; }
 			else if (dotcount < 26) { dot = 1; }
 			else if (dotcount < 44) { dot = 2; }
@@ -240,7 +241,8 @@ void showDot(void)
 			else { dot = 0; }
 			break;
 		}
-		case 4: {
+		case 3:
+		{
 			if (dotcount < 12) { dot = 0; }
 			else if (dotcount < 36) { dot = 3; }
 			else if (dotcount < 60) { dot = 4; }
@@ -249,7 +251,8 @@ void showDot(void)
 			else { dot = 0; }
 			break;
 		}
-		case 5: {
+		case 4:
+		{
 			if (dotcount < 14) { dot = 0; }
 			else if (dotcount < 44) { dot = 7; }
 			else if (dotcount < 74) { dot = 3; }
@@ -257,7 +260,8 @@ void showDot(void)
 			else { dot = 0; }
 			break;
 		}
-		case 6: {
+		case 5:
+		{
 			if (dotcount < 14) { dot = 0; }
 			else if (dotcount < 44) { dot = 1; }
 			else if (dotcount < 74) { dot = 2; }
@@ -266,11 +270,8 @@ void showDot(void)
 			break;
 		}
 	}
-	for(i=0; i<4; i++, pdisp++) {
-		*pdisp = dot_font[4*dot+i];
-	}
-
-	return;
+	
+	for(i=0; i<4; i++, pdisp++) { *pdisp = dot_font[4*dot+i]; }
 }
 
 void showNumber(uint16_t num, uint8_t clean, uint8_t dig )
@@ -664,6 +665,7 @@ void showMenu()
 		case MODE_EDIT_TEMP_COEF: sptr = &pic_TempCoef[0]; break;
 		case MODE_EDIT_STRING_SHOW: sptr = &pic_StrShow[0]; break;
 		case MODE_TIMER_SET: sptr = &pic_Timer[0]; break;
+		case MODE_RESET: sptr = &pic_Reset[0]; break;
 		case MODE_EXIT: sptr = &pic_Exit[0]; break;
 		default: break;
 	}
@@ -849,20 +851,26 @@ void showEditType(uint8_t type)
 
 void changeFont(int8_t diff)
 {
-	checkParam(&eep.fontMode, diff, eepMin.fontMode/*1*/, eepMax.fontMode/*5*/);
+	checkParam(&eep.fontMode, diff, eepMin.fontMode/*0*/, eepMax.fontMode/*4*/);
 }
 
 void showFontEdit()
 {
 	uint8_t i;
+	bit flash;
 
 	pdisp = &disp[0];
 	updateFont();
-	showNumber(rtc.hour, 0, 0);
+
+	if (refcount < 20) { flash = 0; }
+	else if (refcount < 40) { flash = 1; }
+	else { flash = 0; }
+	
+	showNumber(rtc.hour, flash, 0);
 	
 	for( i=0; i<4; i++, pdisp++ ) *pdisp = 0x00; // 4 spaces
 	
-	showNumber(rtc.min, 0, 0);
+	showNumber(rtc.min, flash, 0);
 }
 
 void changeDisp(int8_t diff)
@@ -872,7 +880,7 @@ void changeDisp(int8_t diff)
 
 void changeDot(int8_t diff)
 {
-	checkParam(&eep.dotMode, diff, eepMin.dotMode/*1*/, eepMax.dotMode/*6*/);
+	checkParam(&eep.dotMode, diff, eepMin.dotMode/*0*/, eepMax.dotMode/*5*/);
 }
 
 void showDotEdit()
@@ -1191,6 +1199,40 @@ void renderHoliday(uint8_t length, char *str)
 		
 		writeRenderBuffer(0x00);
 	}
+}
+
+void makeReset()
+{
+/*  default values:	
+		pageBlock = 0xFF
+		hourSignal = 0
+		dispMode = 5
+		dotMode = 0
+		fontMode = 0
+		alarmTimeout = 1
+		bright = 2
+		on = 0
+		hour = 7
+		min = 30
+		mon = 1 
+		tue = 1
+		wed = 1
+		thu = 1
+		fri = 1
+		sat = 0
+		sun = 0
+		tempcoef = 0
+		timecoef = 0
+		tempsource = 0
+		stringShow = 1
+*/
+
+	eep = eepDef;
+	saveEdit();
+	displayBright = eep.bright;
+	autoBright();
+	resetDispLoop();
+	menuNumber = MODE_EDIT_TIME;
 }
 
 /*

@@ -35,7 +35,6 @@ void cancelEdit(void)
 	EA = 0;
 	settingsInit();
 	EA = 1;
-	dispMode = MODE_MAIN;
 	widgetNumber = 0;
 	stringNumber = 0;
 
@@ -129,6 +128,7 @@ void main(void)
 							case MODE_EDIT_TIME: {rtc.etm = RTC_HOUR; dispMode = menuNumber; break;}
 							case MODE_EDIT_DATE: {rtc.etm = RTC_YEAR; dispMode = menuNumber; break;}
 							case MODE_EDIT_ALARM: {alarm.etm = ALARM_ON; dispMode = menuNumber; break;}
+							case MODE_RESET: { makeReset(); break; }
 							case MODE_EXIT: { dispMode = MODE_MAIN; widgetNumber = 0; break; }
 							case MODE_TIMER_START: { showTimerStart(); break; }
 							case MODE_EDIT_STRING_SHOW: {	eepromStringShow = eep.stringShow; }
@@ -255,14 +255,15 @@ void main(void)
 					case MODE_EDIT_DOT:
 					case MODE_EDIT_BRIGHT:
 					case MODE_EDIT_TEMP_COEF:
-					case MODE_EDIT_TIME_COEF:
+					case MODE_EDIT_TIME_COEF: { cancelEdit(); }
 					case MODE_EDIT_STRING_SHOW:
 					case MODE_STRING:
-					case MODE_EXIT: { cancelEdit(); }
+					case MODE_RESET:
+					case MODE_EXIT:
 					case MODE_EDIT_TIME:
 					case MODE_EDIT_DATE: { resetDispLoop(); break; }
 					case MODE_TIMER_SET:
-					case MODE_TIMER_START: { timerSet = 0; cancelEdit(); resetDispLoop(); break; }
+					case MODE_TIMER_START: { timerSet = 0; resetDispLoop(); break; }
 				} // end switch3 dispMode
 				break;
 			} // end BTN_0_LONG case

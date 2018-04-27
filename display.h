@@ -29,6 +29,7 @@ enum
 	MODE_EDIT_FONT,
 	MODE_EDIT_DOT,
 	MODE_EDIT_STRING_SHOW,
+	MODE_RESET,
 	MODE_EXIT,
 	MODE_WIDGET,
 	MODE_TIMER_START,
@@ -126,5 +127,8 @@ void showStringShowEdit();
 void showCoef(int8_t timeTempCoef);
 void showFontEdit();
 void showDotEdit();
+void makeReset();
+void autoBright();
+void saveEdit();
 
 #endif /* _DISPLAY_H_ */
