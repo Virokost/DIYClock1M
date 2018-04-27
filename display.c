@@ -850,22 +850,42 @@ void showEditType(uint8_t type)
 void changeFont(int8_t diff)
 {
 	checkParam(&eep.fontMode, diff, eepMin.fontMode/*1*/, eepMax.fontMode/*5*/);
+}
 
-	return;
+void showFontEdit()
+{
+	uint8_t i;
+
+	pdisp = &disp[0];
+	updateFont();
+	showNumber(rtc.hour, 0, 0);
+	
+	for( i=0; i<4; i++, pdisp++ ) *pdisp = 0x00; // 4 spaces
+	
+	showNumber(rtc.min, 0, 0);
 }
 
 void changeDisp(int8_t diff)
 {
 	checkParam(&eep.dispMode, diff, eepMin.dispMode/*1*/, eepMax.dispMode/*5*/);
-
-	return;
 }
 
 void changeDot(int8_t diff)
 {
 	checkParam(&eep.dotMode, diff, eepMin.dotMode/*1*/, eepMax.dotMode/*6*/);
+}
 
-	return;
+void showDotEdit()
+{
+	uint8_t i;
+	
+	pdisp = &disp[0];
+	
+	for( i=0; i<10; i++, pdisp++ ) *pdisp = 0x00; // 10 spaces
+	
+	showDot();
+	
+	for( i=0; i<10; i++, pdisp++ ) *pdisp = 0x00; // 10 spaces
 }
 
 void changeBright(int8_t diff)
@@ -873,18 +893,14 @@ void changeBright(int8_t diff)
 	checkParam(&eep.bright, diff, eepMin.bright/*0*/, eepMax.bright/*6*/);
 	displayBright = eep.bright;
 	autoBright();
-
-	return;
 }
 
 void changeHourSignal(int8_t diff)
 {
 	checkParam(&eep.hourSignal, diff, eepMin.hourSignal/*0*/, eepMax.hourSignal/*1*/);
-
-	return;
 }
 
-void showHourSignalEdit(void)
+void showHourSignalEdit()
 {
 	uint8_t i, code *sptr;
 
@@ -893,15 +909,11 @@ void showHourSignalEdit(void)
 		sptr = &pic_Off[0];
 	}
 	for(i=0; i<DISPLAYSIZE; i++, sptr++) disp[i] = *sptr;
-
-	return;
 }
 
 void changeTimeCoef(int8_t diff)
 {
 	checkParam(&eep.timecoef, diff, eepMin.timecoef/*-128*/, eepMax.timecoef/*127*/);
-
-	return;
 }
 
 void showCoef(int8_t timeTempCoef)

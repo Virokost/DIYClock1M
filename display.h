@@ -124,5 +124,7 @@ void showString();
 void changeStringShow(int8_t diff);
 void showStringShowEdit();
 void showCoef(int8_t timeTempCoef);
+void showFontEdit();
+void showDotEdit();
 
 #endif /* _DISPLAY_H_ */
