@@ -3,7 +3,7 @@
 #include "settings.h"
 
 EEP_Param eep;
-code EEP_Param eepDef = {0xFF, 0, 5, 0, 0, 1, 2, 0, 7, 30, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1};
+static code EEP_Param eepDef = {0xFF, 0, 5, 0, 0, 1, 2, 0, 7, 30, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1};
 	//pageBlock, hourSignal, dispMode, dotMode, fontMode, alarmTimeout, bright, on, hour,
 	//min, mon, tue, wed, thu, fri, sat, sun, tempcoef, timecoef, tempsource, stringShow
 
@@ -60,4 +60,9 @@ void settingsSave(void)
 	}
 
 	return;
+}
+
+void defReset()
+{
+	eep = eepDef;
 }

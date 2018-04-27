@@ -34,9 +34,9 @@ typedef struct {
 extern EEP_Param eep;
 extern code EEP_Param eepMin;
 extern code EEP_Param eepMax;
-extern code EEP_Param eepDef;
 
 void settingsInit(void);
 void settingsSave(void);
+void defReset();
 
 #endif /* _SETTINGS_H_ */

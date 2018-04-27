@@ -1227,7 +1227,7 @@ void makeReset()
 		stringShow = 1
 */
 
-	eep = eepDef;
+	defReset();
 	saveEdit();
 	displayBright = eep.bright;
 	autoBright();
