@@ -9,11 +9,10 @@
 #include "holidays.h"
 #include "delay.h"
 #include "i2c.h"
-
 #include "bmxx80.h"
 #include "si7021.h"
 
-void hwInit(void)
+void hwInit()
 {
 	settingsInit();
 	displayInit();
@@ -23,11 +22,9 @@ void hwInit(void)
 	bmxx80Init();
 	si7021Init();
 	rtc.etm = RTC_NOEDIT;
-	
-	return;
 }
 
-void cancelEdit(void)
+void cancelEdit()
 {
 	while(refstart == 0) {}
 		
@@ -37,11 +34,9 @@ void cancelEdit(void)
 	EA = 1;
 	widgetNumber = 0;
 	stringNumber = 0;
-
-	return;
 }
 
-void saveEdit(void)
+void saveEdit()
 {
 	while(refstart == 0) {}
 		
@@ -49,12 +44,9 @@ void saveEdit(void)
 	EA = 0;
 	settingsSave();
 	EA = 1;
-	dispMode = MODE_MAIN;
-
-	return;
 }
 
-void main(void)
+void main()
 {
 	uint8_t cmd;
 	uint8_t direction = PARAM_UP;
@@ -201,7 +193,6 @@ void main(void)
 							scroll_index_string = -1;
 						}
 						
-						saveEdit();
 						resetDispLoop();
 						break;
 					}
@@ -359,7 +350,5 @@ void main(void)
 		}
 		
 	} // end main while loop
-	
-	return;
 }
 

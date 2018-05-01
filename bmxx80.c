@@ -76,10 +76,12 @@ uint16_t bmxx80read16_LE(uint8_t reg)
 }
 #endif
 
+/*
 int16_t bmxx80readS16(uint8_t reg)
 {
 	return (int16_t)bmxx80read16(reg);
 }
+*/
 
 int16_t bmxx80readS16_LE(uint8_t reg)
 {

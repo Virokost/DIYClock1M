@@ -857,20 +857,14 @@ void changeFont(int8_t diff)
 void showFontEdit()
 {
 	uint8_t i;
-	bit flash;
 
 	pdisp = &disp[0];
 	updateFont();
-
-	if (refcount < 20) { flash = 0; }
-	else if (refcount < 40) { flash = 1; }
-	else { flash = 0; }
+	showNumber(rtc.hour, 0, 0);
 	
-	showNumber(rtc.hour, flash, 0);
+	for(i=0; i<4; i++, pdisp++) { *pdisp = dot_font[12+i]; } // show semicolon
 	
-	for( i=0; i<4; i++, pdisp++ ) *pdisp = 0x00; // 4 spaces
-	
-	showNumber(rtc.min, flash, 0);
+	showNumber(rtc.min, 0, 0);
 }
 
 void changeDisp(int8_t diff)
@@ -1207,10 +1201,10 @@ void makeReset()
 		pageBlock = 0xFF
 		hourSignal = 0
 		dispMode = 5
-		dotMode = 0
+		dotMode = 1
 		fontMode = 0
 		alarmTimeout = 1
-		bright = 2
+		bright = 1
 		on = 0
 		hour = 7
 		min = 30
